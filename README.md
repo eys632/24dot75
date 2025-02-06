@@ -65,13 +65,11 @@
 ### ✅ 해야 할 작업
 1. **사용자 검색 제한**
    - **로그인 시스템 구축 (학생/관리자 계정)**
-   - **검색 횟수 제한 (하루 50회)**
 2. **어드민 기능 추가**
    - **문서 업로드 기능** → 새 문서 추가 시 자동으로 Parent-Child 변환  
    - **검색 로그 분석** → 학생들이 자주 검색하는 질문 확인
 
 ### 🔹 동작 과정
-- 학생이 로그인하면 **하루 50회 검색 가능**
 - 관리자가 새로운 문서를 업로드하면 자동으로 Parent-Child 변환 후 DB 저장
 - 검색 로그를 기록하여 **자주 묻는 질문 분석 가능**
 
@@ -81,16 +79,14 @@
 **📌 해야 할 일:** 웹 인터페이스 또는 API 개발.
 
 ### ✅ 해야 할 작업
-1. **FastAPI 또는 Flask를 이용해 챗봇 API 개발**
-   - 사용자 질문 입력 → 검색 → 응답 생성 → 사용자에게 반환
-2. **웹 UI 또는 챗봇 인터페이스 개발**
+1. **웹 UI 또는 챗봇 인터페이스 개발**
    - 프론트엔드는 React 또는 Streamlit 등 선택 가능
 
 ---
 
 ## 🔥 최종 개발 순서 (순서대로 진행!)
 ✅ **1단계: 문서 수집 & 저장 (Parent-Child 구조 설정 & ChromaDB, SQLite 저장)**  
-✅ **2단계: 검색 시스템 구축 (Hybrid Search + Parents Retriever 적용)**  
+✅ **2단계: 검색 시스템 구축 (Ensemble Retriver, ParentDocumentRetiever, MultiQuery Retriever 적용)**  
 ✅ **3단계: LLM 응답 생성 (Query Rewriting 적용 & GPT-4 최적화)**  
 ✅ **4단계: 유저 관리 시스템 개발 (로그인, 검색 제한 설정)**  
 ✅ **5단계: 어드민 기능 추가 (문서 업로드 & 검색 로그 분석)**  
@@ -102,13 +98,12 @@
 | 구성 요소 | 기술 |
 |-----------|--------------------|
 | **벡터 데이터베이스** | ChromaDB |
-| **임베딩 모델** | OpenAI Embeddings |
-| **키워드 검색 DB** | SQLite |
-| **검색 방식** | Hybrid Search (벡터 + 키워드 검색) |
+| **임베딩 모델** | Upstage Embedding |
+| **키워드 및 응답 저장 DB** | SQLite |
+| **검색 방식** | Ensemble Retriver, ParentDocumentRetiever, MultiQuery Retriever (벡터 + 키워드 검색) |
 | **프롬프트 최적화** | Query Rewriting |
 | **유저 관리** | 로그인 시스템 + 검색 제한 |
-| **API 개발** | FastAPI 또는 Flask |
-| **프론트엔드** | React 또는 Streamlit |
+| **프론트엔드** | Django 또는 Streamlit |
 
 ---
 
