@@ -11,7 +11,7 @@ def hash_password(password):
     """
     return hashlib.sha256(password.encode()).hexdigest()
 
-def register_user(username, password, role="user"):
+def register_user(username, password, role="user"): 
     """
     새 사용자를 데이터베이스에 등록하는 함수
     :param username: 사용자 아이디
