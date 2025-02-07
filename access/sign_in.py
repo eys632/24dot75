@@ -2,7 +2,6 @@ import sqlite3
 import hashlib
 import os
 
-# 데이터베이스 경로 (data/users.db)
 DB_PATH = os.path.join("data", "users.db")
 
 def hash_password(password):
@@ -11,13 +10,17 @@ def hash_password(password):
     """
     return hashlib.sha256(password.encode()).hexdigest()
 
-def register_user(username, password, role="user"): 
+def register_user(username, password, role="user"):
     """
     새 사용자를 데이터베이스에 등록하는 함수
     :param username: 사용자 아이디
     :param password: 비밀번호 (해싱하여 저장)
     :param role: 사용자 권한 (기본값: user, 관리자는 admin)
     """
+    if role == "super_admin":
+        print("[오류] 슈퍼 관리자는 생성할 수 없습니다.")
+        return
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
@@ -41,7 +44,7 @@ def login_user(username, password):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # username이 존재하는지 확인
+# username이 존재하는지 확인
     cursor.execute("SELECT password, role FROM users WHERE username = ?", (username,))
     result = cursor.fetchone()
 
@@ -61,11 +64,28 @@ def login_user(username, password):
 
 if __name__ == "__main__":
     # 테스트용 유저 추가
-    register_user("test_user", "1234", "user")
-    register_user("admin_user", "admin1234", "admin")
+    print("\n[회원가입 테스트]")
+    register_user("test_user", "1234", "user")  # 일반 사용자 생성
+    register_user("admin_user", "admin1234", "admin")  # 관리자 계정 생성
+    register_user("super_test", "password", "super_admin")  # 슈퍼 관리자 생성 방지 확인
 
     # 로그인 테스트
+    print("\n[로그인 테스트]")
     login_user("test_user", "1234")  # 일반 유저 로그인
     login_user("admin_user", "admin1234")  # 관리자 로그인
+    login_user("superadmin", "supersuper")  # 슈퍼 어드민 로그인
     login_user("test_user", "wrongpass")  # 비밀번호 틀림
     login_user("unknown_user", "1234")  # 존재하지 않는 유저
+
+    # 슈퍼 관리자가 생성되었는지 확인
+    print("\n[슈퍼 관리자 존재 여부 확인]")
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM users WHERE role = 'super_admin'")
+    super_admin_exists = cursor.fetchone()[0]
+    conn.close()
+
+    if super_admin_exists > 0:
+        print("슈퍼 관리자 계정이 존재합니다.")
+    else:
+        print("슈퍼 관리자 계정이 존재하지 않습니다. (오류 발생 가능)")

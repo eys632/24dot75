@@ -43,7 +43,7 @@ def initialize_database():
         cursor.execute("""
         INSERT INTO users (username, password, role) 
         VALUES (?, ?, ?)
-        """, ("superadmin", hash_password("super_secure_password"), "super_admin"))
+        """, ("superadmin", hash_password("supersuper"), "super_admin"))
         print("슈퍼 관리자 계정(superadmin)이 생성되었습니다.")
 
     conn.commit()
