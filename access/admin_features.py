@@ -43,6 +43,20 @@ def delete_user(username):
 
     conn.close()
 
+def get_admin_request_list():
+    """
+    관리자 승격 요청한 유저 목록을 조회하는 함수
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT username FROM admin_requests")  # 요청 목록 조회
+    admin_requests = cursor.fetchall()
+
+    conn.close()
+
+    return [user[0] for user in admin_requests]  # 리스트 형태로 반환
+
 def approve_admin_request(username):
     """
     관리자(admin)가 user의 admin 요청을 승인하는 기능
