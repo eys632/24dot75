@@ -67,7 +67,7 @@ def register_user():
         conn.close()
         return None, None  # 회원가입 실패
 
-def user_dashboard(username):
+def user_dashboard(user_id, username):
     """
     일반 사용자(user) 전용 기능
     """
@@ -78,11 +78,11 @@ def user_dashboard(username):
     choice = input("선택: ")
     if choice == "1":
         question = input("챗봇에게 질문: ")
-        ask_chatbot(question)
+        ask_chatbot(user_id, question)
     elif choice == "2":
         request_admin_access(username)
 
-def admin_dashboard(username):
+def admin_dashboard(user_id, username):
     """
     관리자(admin) 전용 기능
     """
@@ -117,7 +117,7 @@ def admin_dashboard(username):
     elif choice == "4":
         manage_database()
 
-def super_admin_dashboard(username):
+def super_admin_dashboard(user_id, username):
     """
     슈퍼 관리자(super_admin) 전용 기능 (admin과 동일한 권한)
     """
@@ -128,17 +128,17 @@ def access_control(username, password):
     """
     로그인 후, 유저 권한에 따라 적절한 기능을 실행하는 함수
     """
-    role = login_user(username, password)
+    user_id, role = login_user(username, password)
 
     if role == "super_admin":
         print(f"\n환영합니다, {username}님. 슈퍼 관리자 권한이 확인되었습니다.")
-        super_admin_dashboard(username)
+        super_admin_dashboard(user_id, username)
     elif role == "admin":
         print(f"\n환영합니다, {username}님. 관리자 권한이 확인되었습니다.")
-        admin_dashboard(username)
+        admin_dashboard(user_id, username)
     elif role == "user":
         print(f"\n환영합니다, {username}님. 일반 사용자 권한이 확인되었습니다.")
-        user_dashboard(username)
+        user_dashboard(user_id, username)
     else:
         print("로그인 실패. 접근 권한이 없습니다.")
 
