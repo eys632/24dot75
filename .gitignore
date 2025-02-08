@@ -2,4 +2,5 @@
 .venv
 data
 pdf_processed\test.ipynb
+pdf_processed\chroma_langchain_db
 __pycache__
