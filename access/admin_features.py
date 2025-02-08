@@ -1,3 +1,4 @@
+# super_admin, admin권한에서 가능한 기능을 함수에 구현
 import sqlite3
 import os
 from sign_in import hash_password

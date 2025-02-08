@@ -63,6 +63,25 @@ def login_user(username, password):
     return None  # 로그인 실패 시 None 반환
 
 if __name__ == "__main__":
+    while True:
+        print("\n[회원가입] 새 사용자 정보를 입력하세요.")
+        user_id = input("아이디 입력: ").strip()
+        user_pw = input("비밀번호 입력: ").strip()
+        user_role = input("권한 선택 (user/admin, 기본값=user): ").strip().lower()
+
+        if not user_role:
+            user_role = "user"
+
+        if user_role not in ["user", "admin"]:
+            print("[오류] 권한은 'user' 또는 'admin'만 가능합니다.")
+            continue
+
+        register_user(user_id, user_pw, user_role)
+
+        more_users = input("추가로 사용자 등록? (y/n): ").strip().lower()
+        if more_users != "y":
+            break
+    
     # 테스트용 유저 추가
     print("\n[회원가입 테스트]")
     register_user("test_user", "1234", "user")  # 일반 사용자 생성
