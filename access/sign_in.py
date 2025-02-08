@@ -45,22 +45,28 @@ def login_user(username, password):
     cursor = conn.cursor()
 
 # username이 존재하는지 확인
-    cursor.execute("SELECT password, role FROM users WHERE username = ?", (username,))
+    cursor.execute("SELECT id, password, role FROM users WHERE username = ?", (username,))
     result = cursor.fetchone()
 
     conn.close()
 
-    if result:
-        stored_password, role = result
-        if stored_password == hash_password(password):
-            print(f"로그인 성공. 아이디: {username}, 권한: {role}")
-            return role  # user 또는 admin 반환
-        else:
-            print("비밀번호가 틀렸습니다.")
-    else:
+    if result is None:
         print("존재하지 않는 아이디입니다.")
+        return None, None  # 존재하지 않는 유저일 경우 예외 처리
 
-    return None  # 로그인 실패 시 None 반환
+    # result 값이 3개여야 함
+    if len(result) != 3:
+        print("데이터베이스 오류: 잘못된 사용자 데이터입니다.")
+        return None, None
+
+    user_id, stored_password, role = result
+
+    if stored_password == hash_password(password):
+        print(f"로그인 성공. 유저 ID: {user_id}, 권한: {role}")
+        return user_id, role  # user_id와 role만 반환
+    else:
+        print("비밀번호가 틀렸습니다.")
+        return None, None
 
 if __name__ == "__main__":
     while True:
