@@ -1,5 +1,5 @@
 from sign_in import login_user
-from admin_features import create_user, delete_user, approve_admin_request, manage_database
+from admin_features import create_user, delete_user, approve_admin_request, manage_database, get_admin_request_list
 from user_features import ask_chatbot, request_admin_access
 import sqlite3
 import os
@@ -40,8 +40,19 @@ def admin_dashboard(username):
         user_to_delete = input("삭제할 유저 아이디: ")
         delete_user(user_to_delete)
     elif choice == "3":
-        admin_candidate = input("관리자로 승격할 유저 아이디: ")
-        approve_admin_request(admin_candidate)
+        admin_requests = get_admin_request_list()
+        
+        if not admin_requests:
+            print("\n[알림] 현재 관리자 승격 요청을 한 유저가 없습니다.")
+            return
+        
+        print("\n[관리자 승격 요청 목록]")
+        for i, user in enumerate(admin_requests, 1):
+            print(f"{i}. {user}")
+
+        admin_candidate = input("\n관리자로 승격할 유저 아이디 (취소하려면 Enter 입력): ").strip()
+        if admin_candidate:
+            approve_admin_request(admin_candidate)
     elif choice == "4":
         manage_database()
 
