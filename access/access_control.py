@@ -3,8 +3,69 @@ from admin_features import create_user, delete_user, approve_admin_request, mana
 from user_features import ask_chatbot, request_admin_access
 import sqlite3
 import os
+import hashlib
 
-DB_PATH = os.path.join("data", "users.db")
+DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "users.db"))
+
+# 폴더가 없으면 자동 생성
+if not os.path.exists(os.path.join(DB_PATH)):
+    os.makedirs(os.path.join(DB_PATH, "data"))
+
+def hash_password(password):
+    """ 비밀번호를 SHA-256 방식으로 해싱 """
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def initialize_database():
+    """
+    데이터베이스가 존재하지 않을 경우 새로 생성
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # users 테이블이 없으면 생성
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            password TEXT NOT NULL,
+            role TEXT DEFAULT 'user'
+        )
+    ''')
+
+    # admin_requests 테이블이 없으면 생성
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS admin_requests (
+            username TEXT PRIMARY KEY
+        )
+    ''')
+
+    conn.commit()
+    conn.close()
+
+# 실행 시 데이터베이스 초기화 (테이블 없으면 생성)
+initialize_database()
+
+def register_user():
+    """
+    새 사용자를 데이터베이스에 등록하는 함수
+    """
+    print("\n[회원가입] 새 사용자 정보를 입력하세요.")
+    username = input("아이디 입력: ").strip()
+    password = input("비밀번호 입력: ").strip()
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", 
+                       (username, hash_password(password), "user"))
+        conn.commit()
+        print(f"\n[회원가입 완료] {username}님, 회원가입이 완료되었습니다! 자동으로 로그인됩니다.")
+        conn.close()
+        return username, password  # 회원가입 후 자동 로그인
+    except sqlite3.IntegrityError:
+        print("이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.")
+        conn.close()
+        return None, None  # 회원가입 실패
 
 def user_dashboard(username):
     """
@@ -82,6 +143,20 @@ def access_control(username, password):
         print("로그인 실패. 접근 권한이 없습니다.")
 
 if __name__ == "__main__":
-    username = input("아이디 입력: ")
-    password = input("비밀번호 입력: ")
-    access_control(username, password)
+    print("\n[로그인 시스템]")
+    print("1. 로그인")
+    print("2. 회원가입")
+
+    choice = input("선택: ").strip()
+    
+    if choice == "1":
+        username = input("아이디 입력: ").strip()
+        password = input("비밀번호 입력: ").strip()
+        access_control(username, password)
+
+    elif choice == "2":
+        new_username, new_password = register_user()
+        if new_username and new_password:
+            access_control(new_username, new_password)  # 회원가입 후 자동 로그인
+    else:
+        print("[오류] 잘못된 입력입니다. 프로그램을 종료합니다.")
