@@ -16,7 +16,7 @@ def load_document(file_path: str,
                   split: str = "page",
                   output_format: str = "html",
                   ocr: str = "auto",
-                  coordinates: bool = True) -> List[Document]:
+                  coordinates: bool = False) -> List[Document]:
     """
     파일 경로에 있는 문서를 읽고, 문서 내용을 Document 자료형의 리스트로 만들어 줌
     
@@ -30,13 +30,11 @@ def load_document(file_path: str,
     반환값:
       - Document 객체들이 들어있는 리스트를 반환함
     """
-    # 파일 경로와 옵션을 가지고 문서를 읽어오는 도구(loader)를 만듦
     loader = UpstageDocumentParseLoader(file_path,
                                           split=split,
                                           output_format=output_format,
                                           ocr=ocr,
                                           coordinates=coordinates)
-    # loader.load()를 호출하여 문서를 읽어옴
     docs = loader.load()
     return docs
 
@@ -50,15 +48,13 @@ def filter_tegs(documents: List[Document]) -> List[Document]:
     반환값:
       - 머리글(header)이나 꼬리글(footer)이 아닌 문서들이 들어있는 리스트임
     """
-    # 각 문서의 metadata에서 'category'라는 정보를 확인함
-    # 'category'가 'header'나 'footer'가 아닌 문서만 모아서 새 리스트를 만듦
     filtered_documents = [
         doc for doc in documents 
         if doc.metadata.get('category') not in ('header', 'footer')
     ]
     return filtered_documents
 
-def main():
+def main(file_path):
     """
     프로그램의 시작 부분임
     
@@ -68,9 +64,6 @@ def main():
     4. 필터링된 문서 개수를 출력함
     5. 예시로 첫 번째 문서의 내용을 출력함
     """
-    # 읽어올 문서 파일의 경로를 설정함
-    file_path = "data\Agentic Search-Enhanced.pdf"
-    
     # load_document 함수를 사용하여 파일을 읽어옴
     documents = load_document(file_path=file_path, split="element")
     
@@ -85,11 +78,12 @@ def main():
     
     # 예시: 필터링된 문서가 있다면 첫 번째 문서의 내용을 출력함
     if filtered_documents:
-        print("첫 번째 필터링된 문서의 내용:")
-        print(filtered_documents[0].page_content)
+        return filtered_documents
     else:
         print("필터링된 문서가 없음")
+        return None
 
 # 이 파일이 직접 실행될 때 main() 함수를 호출함
 if __name__ == "__main__":
-    main()
+  file_path = "data\Agentic Search-Enhanced.pdf"
+  main(file_path=file_path)
