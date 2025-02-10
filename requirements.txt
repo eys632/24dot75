@@ -1,0 +1,15 @@
+﻿langchain
+langchain_core
+langchain_openai
+langchain_chroma
+langchain_community
+langchain_upstage
+langgraph
+
+python-dotenv
+
+pydantic
+dataclasses
+uuid
+datetime
+typing
