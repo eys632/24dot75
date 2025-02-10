@@ -1,3 +1,4 @@
+'''
 # 필요한 라이브러리를 가져옴
 from langchain_upstage import UpstageDocumentParseLoader  # 문서를 읽어오는 도구임
 from datetime import datetime  # 현재 시간을 사용하기 위해 가져옴
@@ -85,5 +86,41 @@ def main(file_path):
 
 # 이 파일이 직접 실행될 때 main() 함수를 호출함
 if __name__ == "__main__":
-  file_path = "data\Agentic Search-Enhanced.pdf"
+  file_path = "pdf_processed/data/SPRI_AI_Brief_2023년12월호_F.pdf"
   main(file_path=file_path)
+  '''
+from langchain_upstage import UpstageDocumentParseLoader  # 문서를 읽어오는 도구임
+from datetime import datetime  # 현재 시간을 사용하기 위해 가져옴
+from dotenv import load_dotenv  # 환경 변수를 사용하기 위해 가져옴
+from typing import List  # 리스트 타입을 표시할 때 사용함
+from collections import namedtuple  # 이름 붙은 튜플(namedtuple)을 사용함
+import os  # 환경 변수를 사용하기 위해 가져옴
+
+load_dotenv()
+
+# Document라는 이름의 자료형을 만듦
+# 이 자료형은 문서의 정보(metadata)와 실제 내용(page_content)을 저장함
+Document = namedtuple("Document", ["metadata", "page_content"])
+
+def load_document(file_path: str,
+                  split: str = "page",
+                  output_format: str = "html",
+                  ocr: str = "auto",
+                  coordinates: bool = False) -> List[Document]:
+    """
+    파일 경로에 있는 문서를 읽고, 문서 내용을 Document 자료형의 리스트로 만들어 줌
+    """
+    loader = UpstageDocumentParseLoader(file_path,
+                                        split=split,
+                                        output_format=output_format,
+                                        ocr=ocr,
+                                        coordinates=coordinates)
+    docs = loader.load()
+    return docs
+
+file_path = "pdf_processed/data/SPRI_AI_Brief_2023년12월호_F.pdf"
+
+docs = load_document(file_path=file_path, split="element")
+
+print(f"[디버그] 로드된 문서 개수: {len(docs)}")
+print(f"[디버그] 첫 번째 문서 내용: {docs[0].page_content[:500] if docs else '문서가 없음'}")

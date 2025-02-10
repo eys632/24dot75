@@ -6,7 +6,9 @@ from langchain_core.output_parsers import JsonOutputParser
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-from database_process import select_docs
+#from database_process import select_docs
+from pdf_processed.database_process import select_docs
+
 
 def answer_output_parser():
     class QuestionSummary(BaseModel):
@@ -180,7 +182,7 @@ def generate_response(db, query):
   answer_prompt, question_prompt = define_prompts(answer_parser, question_parser)
 
   # Initialize LLM
-  llm = ChatOpenAI(temperature=0, model_name="gpt-4o")
+  llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
 
   # Create Chains
   answer_chain, question_chain = create_chains(llm, answer_prompt, question_prompt, answer_parser, question_parser)
