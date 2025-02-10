@@ -190,10 +190,13 @@ def generate_response(db, query):
 
     # Execute Chains and Get Results
     answer, question = execute_chains(answer_chain, question_chain, query, mmr_docs)
+    print(f"[디버그] {i}번째 시도 결과: {answer}")
+    print(f"[디버그] {i}번째 시도 결과: {question}")
     
     if question["next"]:
       break
     else:
+      query = question["new_query"]
       continue
 
   return answer, question

@@ -1,2 +1,8 @@
-langchain_upstage
+langchain-upstage
+langchain-core
+langchain-openai
+langchain-teddynote
+langchain-community
+langchain-chroma
+pydantic
 python-dotenv
