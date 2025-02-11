@@ -53,30 +53,34 @@ RAG 시스템은 **정보 검색(Retrieval)과 AI 생성(Generation)을 결합�
 ## 📂 폴더 및 파일 구조
 ```
 24dot75/
-│── access/                  # 사용자 관리
-│   ├── access_control.py     # 로그인 및 권한 관리
-│   ├── admin_features.py     # 관리자 기능 (유저 승인 등)
-│   ├── sign_in.py            # 로그인 및 회원가입 기능
-│   ├── user_features.py      # 유저 기능 (챗봇 질문 등)
-│   ├── __pycache__/          # 파이썬 캐시 파일 저장소
+│── access/                  # 사용자 인증 및 접근 제어 기능
+│   ├── access_control.py     # 사용자 로그인 및 접근 권한 관리
+│   ├── admin_features.py     # 관리자 기능 (사용자 승인, 차단, 권한 변경)
+│   ├── sign_in.py            # 사용자 로그인 및 회원가입 처리
+│   ├── user_features.py      # 일반 사용자 기능 (챗봇 사용, 문서 검색)
+│   ├── __pycache__/          # 파이썬 캐시 파일 저장소 (자동 생성)
 │
-│── data/                     # 데이터 저장소
-│   ├── UserDB_Create.py      # SQLite 데이터베이스 초기화
-│   ├── users.db              # 사용자 정보 DB
-│   ├── chat_history.db       # 사용자 대화 내역 저장
+│── data/                     # 데이터베이스 관련 파일
+│   ├── chat_history.db       # 사용자 대화 내역 저장 (SQLITE DB)
+│   ├── UserDB_Create.py      # 데이터베이스 초기화 및 테이블 생성
+│   ├── users.db              # 사용자 계정 정보 저장 (SQLITE DB)
 │
-│── pdf_processed/            # 문서 분석 및 검색
-│   ├── database_process.py   # 벡터 검색 & 키워드 검색 관리
-│   ├── llm_process.py        # GPT 모델 활용한 질문 응답
-│   ├── processed_documents.py # 문서 임베딩 및 처리
-│   ├── requirements.txt      # PDF 처리 관련 의존성
-│   ├── test.ipynb            # 테스트 노트북
-│   ├── data/                 # 원본 PDF 문서 보관 폴더
-│   ├── chroma_langchain_db/  # ChromaDB 저장 폴더
+│── pdf_processed/            # 문서 분석 및 검색 시스템
+│   ├── database_process.py   # 문서 데이터 벡터화 및 DB 저장
+│   ├── llm_process.py        # LLM을 활용한 문서 요약 및 질의 응답 처리
+│   ├── processed_documents.py # 문서 전처리 및 메타데이터 추출
+│   ├── requirements.txt      # PDF 및 LLM 관련 의존성 패키지 목록
+│   ├── test.ipynb            # 문서 검색 및 분석 테스트
+│   ├── __pycache__/          # Python 캐시 파일 저장소
+│   ├── data/                 # PDF 데이터 저장소
+│   ├── chroma_langchain_db/  # ChromaDB 벡터 검색 데이터 저장소
+│   │   ├── chroma.sqlite3    # 문서 임베딩 데이터를 저장하는 벡터 DB
 │
-│── .gitignore                # Git에서 제외할 파일 목록
-│── README.md                 # 프로젝트 설명 파일
-│── requirements.txt          # 전체 프로젝트 의존성 목록
+│── .gitignore                # Git에 추가되지 않을 파일 목록
+│── README.md                 # 프로젝트 개요 및 실행 방법 문서
+│── requirements.txt          # 프로젝트 전반에 필요한 패키지 목록
+
+
 ```
 
 ---

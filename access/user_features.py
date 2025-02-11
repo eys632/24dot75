@@ -2,7 +2,6 @@
 import sqlite3
 import os
 from datetime import datetime
-import json
 
 # 데이터베이스 경로 설정
 DB_PATH = os.path.join("data", "users.db")
@@ -22,7 +21,9 @@ def ask_chatbot(user_id, question):
     print(response)
 
 def save_chat_log(user_id, query, response):
-    """질문과 답변을 chat_history.db에 저장하는 함수"""
+    """
+    질문과 답변을 chat_history.db에 저장하는 함수
+    """
     conn = sqlite3.connect(CHAT_DB_PATH)
     cursor = conn.cursor()
 
@@ -37,12 +38,9 @@ def save_chat_log(user_id, query, response):
         )
     ''')
 
-    # response가 dict 형태라면 JSON 문자열로 변환
-    response_str = json.dumps(response, ensure_ascii=False) if isinstance(response, dict) else str(response)
-
     # 데이터 삽입
     cursor.execute("INSERT INTO chat_logs (user_id, query, response) VALUES (?, ?, ?)",
-                   (user_id, query, response_str))
+                   (user_id, query, response))
 
     conn.commit()
     conn.close()
