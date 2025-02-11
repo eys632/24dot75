@@ -1,0 +1,57 @@
+/* 사이드바 스타일 조정 */
+#sidebar {
+    max-width: 250px;
+}
+
+/* 고정 사이드바 토글 버튼 위치 */
+#sidebar-toggle {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    z-index: 9999;
+    display: none;
+}
+
+/* 챗봇 대화창 전체 스타일 */
+.chat-window {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #fff;
+}
+
+.chat-messages {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+/* 기본 메시지 스타일 */
+.chat-message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 70%;
+    clear: both;
+}
+
+/* 사용자의 메시지는 왼쪽 정렬 */
+.user-message {
+    background-color: #e0f7fa;
+    float: left;
+    text-align: left;
+}
+
+/* 챗봇의 메시지는 오른쪽 정렬 */
+.bot-message {
+    background-color: #f1f8e9;
+    float: right;
+    text-align: right;
+}
+
+/* 질문 입력 필드 스타일 */
+.chat-input textarea {
+    width: 100%;
+    resize: none;
+}

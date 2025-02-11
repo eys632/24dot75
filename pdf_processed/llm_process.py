@@ -6,7 +6,7 @@ from langchain_core.output_parsers import JsonOutputParser
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-from database_process import select_docs
+from pdf_processed.database_process import select_docs
 
 def answer_output_parser():
     class QuestionSummary(BaseModel):

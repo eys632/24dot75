@@ -12,7 +12,7 @@ load_dotenv()
 # 이 자료형은 문서의 정보(metadata)와 실제 내용(page_content)을 저장함
 Document = namedtuple("Document", ["metadata", "page_content"])
 
-def load_document(file_path: str,
+def load_document(uploaded_file,
                   split: str = "page",
                   output_format: str = "html",
                   ocr: str = "auto",
@@ -30,6 +30,8 @@ def load_document(file_path: str,
     반환값:
       - Document 객체들이 들어있는 리스트를 반환함
     """
+    file_path = uploaded_file.path
+
     loader = UpstageDocumentParseLoader(file_path,
                                           split=split,
                                           output_format=output_format,
@@ -84,6 +86,6 @@ def main(file_path):
         return None
 
 # 이 파일이 직접 실행될 때 main() 함수를 호출함
-if __name__ == "__main__":
-  file_path = "data\Agentic Search-Enhanced.pdf"
-  main(file_path=file_path)
+# if __name__ == "__main__":
+#   file_path = "data\Agentic Search-Enhanced.pdf"
+#   main(file_path=file_path)

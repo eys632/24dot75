@@ -1,0 +1,26 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+<h1>업로드 파일 관리</h1>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>User</th>
+      <th>File Name</th>
+      <th>Uploaded At</th>
+      <th>File URL</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for file in files %}
+    <tr>
+      <td>{{ file.id }}</td>
+      <td>{{ file.user.username }}</td>
+      <td>{{ file.file.name }}</td>
+      <td>{{ file.uploaded_at }}</td>
+      <td><a href="{{ file.file.url }}" target="_blank">View</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
