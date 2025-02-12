@@ -1,24 +1,21 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 <div class="container-fluid">
   <!-- 헤더 영역: 전주대학교 로고 및 챗봇 제목 -->
   <header class="py-3" style="background-color: #003366; color: white; text-align: center;">
-      <img src="/static/images/jeonju_logo.png" alt="전주대학교 로고" style="height: 50px;">
+      <img src="{% static 'images/jeonju_logo.png' %}" alt="전주대학교 로고" style="height: 50px;">
       <h2 style="font-family: 'JeonjuFont', sans-serif;">전주대학교 챗봇</h2>
   </header>
-  
-  <div class="row" style="height: calc(100vh - 130px);">  {# 헤더 높이(예: 80px)와 입력창 높이(예: 50px) 등을 빼서 전체 높이 지정 #}
-    <!-- 좌측 사이드바: 대화 기록 목록 -->
+  <div class="row" style="height: calc(100vh - 130px);">
+    <!-- 좌측 사이드바 -->
     <div class="col-md-3" id="sidebar" style="max-width:250px; border-right: 1px solid #ddd; background-color: #f8f9fa; height: 100%; overflow-y: auto;">
       <div id="sidebar-header" class="d-flex align-items-center justify-content-between px-2 py-2" style="border-bottom: 1px solid #ddd;">
           <h4 style="font-family: 'JeonjuFont', sans-serif; color: #003366; margin:0;">대화 기록</h4>
-          <!-- 사이드바 내 닫기 버튼 -->
           <button id="sidebar-close" class="btn btn-outline-light btn-sm" style="width:40px; height:40px;">
               <i class="bi bi-x-lg"></i>
           </button>
       </div>
-      <!-- 새 채팅 버튼 -->
       <a href="{% url 'board:chat' %}" class="btn btn-primary btn-block my-3 mx-2" id="new-chat-btn" style="background-color: #003366; border: none;">
           새 채팅 시작
       </a>
@@ -39,8 +36,7 @@
       {% endfor %}
       </div>
     </div>
-    
-    <!-- 우측 메인 영역: 채팅 영역 (메시지 출력 전용) -->
+    <!-- 우측 메인 영역 -->
     <div class="col-md-9 p-0" id="main-chat" style="position: relative; background-color: #ffffff; height: 100%;">
       <div class="chat-window" style="height: 100%; padding-bottom: 100px; overflow-y: auto;">
           <div class="chat-messages" id="chat-messages" style="padding: 15px;">
@@ -61,8 +57,8 @@
               {% endif %}
           </div>
       </div>
-      <!-- 질문 입력 창: 화면 하단 중앙에 고정 -->
-      <div class="chat-input" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 70%; max-width: 800px; background: #ffffff; padding: 10px; border-top: 1px solid #ddd;">
+      <!-- 질문 입력 창: admin이면 위치를 위로 띄워서 파일 업로드 폼과 겹치지 않게 함 -->
+      <div class="chat-input" style="position: fixed; bottom: {% if user.is_staff %}140px{% else %}0{% endif %}; left: 50%; transform: translateX(-50%); width: 70%; max-width: 800px; background: #ffffff; padding: 10px; border-top: 1px solid #ddd;">
           <form id="chat-form">
               {% csrf_token %}
               <div class="form-group">
@@ -73,9 +69,9 @@
               </button>
           </form>
       </div>
-      <!-- 파일 업로드 폼 (관리자 전용) - 일반 사용자는 표시되지 않음 -->
+      <!-- 파일 업로드 폼 (관리자 전용) -->
       {% if user.is_staff %}
-      <div class="file-upload" style="position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); width: 70%; max-width: 800px; background: #ffffff; padding: 10px; border-top: 1px solid #ddd;">
+      <div class="file-upload" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 70%; max-width: 800px; background: #ffffff; padding: 10px; border-top: 1px solid #ddd;">
           <form id="upload-form" enctype="multipart/form-data">
               {% csrf_token %}
               <input type="file" name="file" id="file-input" class="form-control">
@@ -86,137 +82,125 @@
       {% endif %}
     </div>
   </div>
-  
-  <!-- 고정 사이드바 열기 버튼 (사이드바가 닫혔을 때 왼쪽 가장자리에 표시) -->
   <div id="sidebar-toggle" style="position: fixed; left: 0; top: 50%; z-index: 9999; display: none;">
       <button class="btn btn-outline-secondary btn-sm" style="width:40px; height:40px;">
           <i class="bi bi-list"></i>
       </button>
   </div>
 </div>
-
 <script>
-    // 전역 변수: 현재 대화 ID 설정
-    var currentConversationId = "";
-    {% if active_conversation %}
-        currentConversationId = '{{ active_conversation.id }}';
-    {% endif %}
-    console.log("Current Conversation ID:", currentConversationId);
+// 사이드바 토글 및 폼 제출, 스트리밍 처리 관련 JS 코드 (기존 코드 유지)
+var currentConversationId = "";
+{% if active_conversation %}
+    currentConversationId = '{{ active_conversation.id }}';
+{% endif %}
+console.log("Current Conversation ID:", currentConversationId);
 
-    // 사이드바 토글 기능: 사이드바 헤더 오른쪽에 닫기 버튼, 고정 열기 버튼은 사이드바 외부에 위치
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebar-toggle');
-    const sidebarCloseBtn = document.getElementById('sidebar-close');
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebarCloseBtn = document.getElementById('sidebar-close');
 
-    sidebarCloseBtn.addEventListener('click', function(){
-        sidebar.style.display = 'none';
-        sidebarToggle.style.display = 'block';
-    });
-    sidebarToggle.addEventListener('click', function(){
-        sidebar.style.display = 'block';
-        sidebarToggle.style.display = 'none';
-    });
+sidebarCloseBtn.addEventListener('click', function(){
+    sidebar.style.display = 'none';
+    sidebarToggle.style.display = 'block';
+});
+sidebarToggle.addEventListener('click', function(){
+    sidebar.style.display = 'block';
+    sidebarToggle.style.display = 'none';
+});
 
-    // 텍스트 영역: Shift+Enter는 줄바꿈, Enter는 폼 제출
-    const textAreaElem = document.querySelector('#chat-form textarea, #chat-form input[type="text"]');
-    if (textAreaElem) {
-        textAreaElem.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                document.getElementById('chat-form').dispatchEvent(new Event('submit', { bubbles: true }));
-            }
-        });
-    }
-
-    // 폼 제출 및 스트리밍 처리
-    document.getElementById('chat-form').addEventListener('submit', function(e){
-        e.preventDefault();
-        const form = e.target;
-        const textarea = form.querySelector('textarea');
-        const question = textarea.value;
-        if (!question.trim()) return;
-        const chatMessages = document.getElementById('chat-messages');
-        // 사용자 질문 추가 (즉시 표시)
-        const userMessageElem = document.createElement('div');
-        userMessageElem.className = 'chat-message user-message mb-2';
-        userMessageElem.style.textAlign = 'right';  // 질문 오른쪽 정렬
-        userMessageElem.innerHTML = `<p><strong>나:</strong> ${question.replace(/\n/g, '<br>')}</p>`;
-        chatMessages.appendChild(userMessageElem);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        let uniqueId = Date.now();
-        // 새 답변 메시지 요소 (스트리밍 텍스트 영역과 스피너)
-        const answerMessageElem = document.createElement('div');
-        answerMessageElem.className = 'chat-message bot-message mb-2';
-        answerMessageElem.style.textAlign = 'left';  // 답변 왼쪽 정렬
-        answerMessageElem.innerHTML = `<p><strong>챗봇:</strong> <span id="answer-text-${uniqueId}"></span></p>`;
-        chatMessages.appendChild(answerMessageElem);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        // 별도 reason 영역 (답변과 분리해서 표시, 초기에는 숨김)
-        const reasonElem = document.createElement('div');
-        reasonElem.id = `reason-text-${uniqueId}`;
-        reasonElem.style.fontSize = '0.8em';
-        reasonElem.style.marginTop = '5px';
-        reasonElem.style.display = 'none';
-        answerMessageElem.appendChild(reasonElem);
-
-        // 스피너 요소 (답변 텍스트 오른쪽에 위치)
-        const spinnerElem = document.createElement('span');
-        spinnerElem.id = `spinner-${uniqueId}`;
-        spinnerElem.className = 'spinner-border spinner-border-sm text-primary ms-2';
-        spinnerElem.setAttribute('role', 'status');
-        spinnerElem.style.display = 'inline-block';
-        // spinnerElem.innerHTML = '<span class="visually-hidden">Loading...</span>';
-        answerMessageElem.querySelector('p').appendChild(spinnerElem);
-
-        const formData = new FormData();
-        formData.append('question', question);
-        if (currentConversationId) {
-            formData.append('conversation_id', currentConversationId);
+const textAreaElem = document.querySelector('#chat-form textarea, #chat-form input[type="text"]');
+if (textAreaElem) {
+    textAreaElem.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('chat-form').dispatchEvent(new Event('submit', { bubbles: true }));
         }
-        const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
-
-        fetch("{% url 'board:stream_answer' %}", {
-            method: 'POST',
-            headers: { 'X-CSRFToken': csrfToken },
-            body: formData
-        }).then(response => {
-            const convId = response.headers.get('X-Conversation-ID');
-            if (convId && !currentConversationId) {
-                currentConversationId = convId;
-            }
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let accumulatedText = "";
-            const answerTextElem = document.getElementById(`answer-text-${uniqueId}`);
-            function read() {
-                reader.read().then(({ done, value }) => {
-                    if (done) {
-                        spinnerElem.style.display = 'none';
-                        return;
-                    }
-                    const chunk = decoder.decode(value, {stream: true});
-                    accumulatedText += chunk;
-                    if (accumulatedText.indexOf('[[REASON_DELIMITER]]') !== -1) {
-                        let parts = accumulatedText.split('[[REASON_DELIMITER]]');
-                        answerTextElem.innerHTML = parts[0];
-                        reasonElem.style.display = 'block';
-                        reasonElem.innerHTML = "<small>" + parts.slice(1).join('[[REASON_DELIMITER]]') + "</small>";
-                    } else {
-                        answerTextElem.innerHTML = accumulatedText;
-                    }
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                    read();
-                });
-            }
-            read();
-        }).catch(error => {
-            console.error('Error during streaming:', error);
-            spinnerElem.style.display = 'none';
-        });
-        
-        textarea.value = '';
     });
+}
+
+document.getElementById('chat-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const form = e.target;
+    const textarea = form.querySelector('textarea');
+    const question = textarea.value;
+    if (!question.trim()) return;
+    const chatMessages = document.getElementById('chat-messages');
+    const userMessageElem = document.createElement('div');
+    userMessageElem.className = 'chat-message user-message mb-2';
+    userMessageElem.style.textAlign = 'right';
+    userMessageElem.innerHTML = `<p><strong>나:</strong> ${question.replace(/\n/g, '<br>')}</p>`;
+    chatMessages.appendChild(userMessageElem);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    let uniqueId = Date.now();
+    const answerMessageElem = document.createElement('div');
+    answerMessageElem.className = 'chat-message bot-message mb-2';
+    answerMessageElem.style.textAlign = 'left';
+    answerMessageElem.innerHTML = `<p><strong>챗봇:</strong> <span id="answer-text-${uniqueId}"></span></p>`;
+    chatMessages.appendChild(answerMessageElem);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    const reasonElem = document.createElement('div');
+    reasonElem.id = `reason-text-${uniqueId}`;
+    reasonElem.style.fontSize = '0.8em';
+    reasonElem.style.marginTop = '5px';
+    reasonElem.style.display = 'none';
+    answerMessageElem.appendChild(reasonElem);
+
+    const spinnerElem = document.createElement('span');
+    spinnerElem.id = `spinner-${uniqueId}`;
+    spinnerElem.className = 'spinner-border spinner-border-sm text-primary ms-2';
+    spinnerElem.setAttribute('role', 'status');
+    spinnerElem.style.display = 'inline-block';
+    answerMessageElem.querySelector('p').appendChild(spinnerElem);
+
+    const formData = new FormData();
+    formData.append('question', question);
+    if (currentConversationId) {
+        formData.append('conversation_id', currentConversationId);
+    }
+    const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch("{% url 'board:stream_answer' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+        body: formData
+    }).then(response => {
+        const convId = response.headers.get('X-Conversation-ID');
+        if (convId && !currentConversationId) {
+            currentConversationId = convId;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let accumulatedText = "";
+        const answerTextElem = document.getElementById(`answer-text-${uniqueId}`);
+        function read() {
+            reader.read().then(({ done, value }) => {
+                if (done) {
+                    spinnerElem.style.display = 'none';
+                    return;
+                }
+                const chunk = decoder.decode(value, {stream: true});
+                accumulatedText += chunk;
+                if (accumulatedText.indexOf('[[REASON_DELIMITER]]') !== -1) {
+                    let parts = accumulatedText.split('[[REASON_DELIMITER]]');
+                    answerTextElem.innerHTML = parts[0];
+                    reasonElem.style.display = 'block';
+                    reasonElem.innerHTML = "<small>" + parts.slice(1).join('[[REASON_DELIMITER]]') + "</small>";
+                } else {
+                    answerTextElem.innerHTML = accumulatedText;
+                }
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                read();
+            });
+        }
+        read();
+    }).catch(error => {
+        console.error('Error during streaming:', error);
+        spinnerElem.style.display = 'none';
+    });
+    textarea.value = '';
+});
 </script>
 {% endblock %}
