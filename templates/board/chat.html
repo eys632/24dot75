@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container-fluid">
+  <!-- 헤더 영역: 전주대학교 로고 및 챗봇 제목 -->
+  <header class="py-3" style="background-color: #003366; color: white; text-align: center;">
+      <img src="{% static 'images/jeonju_logo.png' %}" alt="전주대학교 로고" style="height: 50px;">
+      <h2 style="font-family: 'JeonjuFont', sans-serif;">전주대학교 챗봇</h2>
+  </header>
+  <div class="row" style="height: calc(100vh - 130px);">
+    <!-- 좌측 사이드바 -->
+    <div class="col-md-3" id="sidebar" style="max-width:250px; border-right: 1px solid #ddd; background-color: #f8f9fa; height: 100%; overflow-y: auto;">
+      <div id="sidebar-header" class="d-flex align-items-center justify-content-between px-2 py-2" style="border-bottom: 1px solid #ddd;">
+          <h4 style="font-family: 'JeonjuFont', sans-serif; color: #003366; margin:0;">대화 기록</h4>
+          <button id="sidebar-close" class="btn btn-outline-light btn-sm" style="width:40px; height:40px;">
+              <i class="bi bi-x-lg"></i>
+          </button>
+      </div>
+      <a href="{% url 'board:chat' %}" class="btn btn-primary btn-block my-3 mx-2" id="new-chat-btn" style="background-color: #003366; border: none;">
+          새 채팅 시작
+      </a>
+      <div id="conversation-list" class="px-2">
+      {% for conv in conversation_list %}
+          {% with rep=conv.messages.all|slice:":2" %}
+              <a href="{% url 'board:chat_detail' conv.id %}" class="btn btn-outline-primary btn-block mb-2" style="font-family: 'JeonjuFont', sans-serif;">
+                  {% if rep.0 %}
+                      {{ rep.0.message|truncatechars:20 }}
+                  {% endif %}
+                  {% if rep.1 %}
+                      / {{ rep.1.message|truncatechars:20 }}
+                  {% endif %}
+              </a>
+          {% endwith %}
+      {% empty %}
+          <p style="padding: 10px; font-family: 'JeonjuFont', sans-serif;">대화 기록이 없습니다.</p>
+      {% endfor %}
+      </div>
+    </div>
+    <!-- 우측 메인 영역 -->
+    <div class="col-md-9 p-0" id="main-chat" style="position: relative; background-color: #ffffff; height: 100%;">
+      <div class="chat-window" style="height: 100%; padding-bottom: 100px; overflow-y: auto;">
+          <div class="chat-messages" id="chat-messages" style="padding: 15px;">
+              {% if active_conversation %}
+                  {% for message in messages %}
+                      {% if message.is_user %}
+                          <div class="chat-message user-message mb-2" style="text-align: right; font-family: 'JeonjuFont', sans-serif;">
+                              <p><strong>나:</strong> {{ message.message|linebreaks }}</p>
+                          </div>
+                      {% else %}
+                          <div class="chat-message bot-message mb-2" style="text-align: left; font-family: 'JeonjuFont', sans-serif; background-color: #e9ecef; padding: 8px; border-radius: 5px;">
+                              <p><strong>챗봇:</strong> {{ message.message|linebreaks }}</p>
+                          </div>
+                      {% endif %}
+                  {% endfor %}
+              {% else %}
+                  <p style="padding: 10px; font-family: 'JeonjuFont', sans-serif;">대화를 시작하려면 왼쪽에서 새 채팅을 선택하세요.</p>
+              {% endif %}
+          </div>
+      </div>
+      <!-- 질문 입력 창: admin이면 위치를 위로 띄워서 파일 업로드 폼과 겹치지 않게 함 -->
+      <div class="chat-input" style="position: fixed; bottom: {% if user.is_staff %}140px{% else %}0{% endif %}; left: 50%; transform: translateX(-50%); width: 70%; max-width: 800px; background: #ffffff; padding: 10px; border-top: 1px solid #ddd;">
+          <form id="chat-form">
+              {% csrf_token %}
+              <div class="form-group">
+                  {{ form.question }}
+              </div>
+              <button type="submit" class="btn btn-primary mt-2" id="submit-btn" style="background-color: #003366; border: none;">
+                  전송
+              </button>
+          </form>
+      </div>
+      <!-- 파일 업로드 폼 (관리자 전용) -->
+      {% if user.is_staff %}
+      <div class="file-upload" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 70%; max-width: 800px; background: #ffffff; padding: 10px; border-top: 1px solid #ddd;">
+          <form id="upload-form" enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="file" name="file" id="file-input" class="form-control">
+              <button type="submit" class="btn btn-secondary mt-2" id="upload-btn">파일 업로드</button>
+          </form>
+          <div id="upload-result"></div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div id="sidebar-toggle" style="position: fixed; left: 0; top: 50%; z-index: 9999; display: none;">
+      <button class="btn btn-outline-secondary btn-sm" style="width:40px; height:40px;">
+          <i class="bi bi-list"></i>
+      </button>
+  </div>
+</div>
+<script>
+// 사이드바 토글 및 폼 제출, 스트리밍 처리 관련 JS 코드 (기존 코드 유지)
+var currentConversationId = "";
+{% if active_conversation %}
+    currentConversationId = '{{ active_conversation.id }}';
+{% endif %}
+console.log("Current Conversation ID:", currentConversationId);
+
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebarCloseBtn = document.getElementById('sidebar-close');
+
+sidebarCloseBtn.addEventListener('click', function(){
+    sidebar.style.display = 'none';
+    sidebarToggle.style.display = 'block';
+});
+sidebarToggle.addEventListener('click', function(){
+    sidebar.style.display = 'block';
+    sidebarToggle.style.display = 'none';
+});
+
+const textAreaElem = document.querySelector('#chat-form textarea, #chat-form input[type="text"]');
+if (textAreaElem) {
+    textAreaElem.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('chat-form').dispatchEvent(new Event('submit', { bubbles: true }));
+        }
+    });
+}
+
+document.getElementById('chat-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const form = e.target;
+    const textarea = form.querySelector('textarea');
+    const question = textarea.value;
+    if (!question.trim()) return;
+    const chatMessages = document.getElementById('chat-messages');
+    const userMessageElem = document.createElement('div');
+    userMessageElem.className = 'chat-message user-message mb-2';
+    userMessageElem.style.textAlign = 'right';
+    userMessageElem.innerHTML = `<p><strong>나:</strong> ${question.replace(/\n/g, '<br>')}</p>`;
+    chatMessages.appendChild(userMessageElem);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    let uniqueId = Date.now();
+    const answerMessageElem = document.createElement('div');
+    answerMessageElem.className = 'chat-message bot-message mb-2';
+    answerMessageElem.style.textAlign = 'left';
+    answerMessageElem.innerHTML = `<p><strong>챗봇:</strong> <span id="answer-text-${uniqueId}"></span></p>`;
+    chatMessages.appendChild(answerMessageElem);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    const reasonElem = document.createElement('div');
+    reasonElem.id = `reason-text-${uniqueId}`;
+    reasonElem.style.fontSize = '0.8em';
+    reasonElem.style.marginTop = '5px';
+    reasonElem.style.display = 'none';
+    answerMessageElem.appendChild(reasonElem);
+
+    const spinnerElem = document.createElement('span');
+    spinnerElem.id = `spinner-${uniqueId}`;
+    spinnerElem.className = 'spinner-border spinner-border-sm text-primary ms-2';
+    spinnerElem.setAttribute('role', 'status');
+    spinnerElem.style.display = 'inline-block';
+    answerMessageElem.querySelector('p').appendChild(spinnerElem);
+
+    const formData = new FormData();
+    formData.append('question', question);
+    if (currentConversationId) {
+        formData.append('conversation_id', currentConversationId);
+    }
+    const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch("{% url 'board:stream_answer' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+        body: formData
+    }).then(response => {
+        const convId = response.headers.get('X-Conversation-ID');
+        if (convId && !currentConversationId) {
+            currentConversationId = convId;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let accumulatedText = "";
+        const answerTextElem = document.getElementById(`answer-text-${uniqueId}`);
+        function read() {
+            reader.read().then(({ done, value }) => {
+                if (done) {
+                    spinnerElem.style.display = 'none';
+                    return;
+                }
+                const chunk = decoder.decode(value, {stream: true});
+                accumulatedText += chunk;
+                if (accumulatedText.indexOf('[[REASON_DELIMITER]]') !== -1) {
+                    let parts = accumulatedText.split('[[REASON_DELIMITER]]');
+                    answerTextElem.innerHTML = parts[0];
+                    reasonElem.style.display = 'block';
+                    reasonElem.innerHTML = "<small>" + parts.slice(1).join('[[REASON_DELIMITER]]') + "</small>";
+                } else {
+                    answerTextElem.innerHTML = accumulatedText;
+                }
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                read();
+            });
+        }
+        read();
+    }).catch(error => {
+        console.error('Error during streaming:', error);
+        spinnerElem.style.display = 'none';
+    });
+    textarea.value = '';
+});
+</script>
+{% endblock %}

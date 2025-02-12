@@ -1,0 +1,24 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+<h1>대화 기록 관리</h1>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>User</th>
+      <th>Title</th>
+      <th>Created At</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for conv in conversations %}
+    <tr>
+      <td>{{ conv.id }}</td>
+      <td>{{ conv.user.username }}</td>
+      <td>{{ conv.title }}</td>
+      <td>{{ conv.created_at }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

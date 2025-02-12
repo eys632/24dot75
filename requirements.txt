@@ -1,15 +1,18 @@
-﻿langchain
-langchain_core
-langchain_openai
-langchain_chroma
-langchain_community
-langchain_upstage
-langgraph
+﻿langgraph==0.2.70
+langchain==0.3.18
+langchain-chroma==0.2.1
+langchain-community==0.3.17
+langchain-core==0.3.34
+langchain-openai==0.3.3
+langchain-teddynote==0.3.42
+langchain-upstage==0.6.0
 
-python-dotenv
+Django==5.1.6
 
-pydantic
-dataclasses
-uuid
-datetime
-typing
+pydantic==2.10.6
+python-dotenv==1.0.1
+
+dataclasses==0.6
+uuid==1.30
+DateTime==5.5
+typing==3.7.4.3

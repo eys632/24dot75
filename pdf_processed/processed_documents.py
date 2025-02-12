@@ -12,7 +12,7 @@ load_dotenv()
 # 이 자료형은 문서의 정보(metadata)와 실제 내용(page_content)을 저장함
 Document = namedtuple("Document", ["metadata", "page_content"])
 
-def load_document(file_path: str,
+def load_document(file_input,
                   split: str = "page",
                   output_format: str = "html",
                   ocr: str = "auto",
@@ -30,7 +30,13 @@ def load_document(file_path: str,
     반환값:
       - Document 객체들이 들어있는 리스트를 반환함
     """
-    loader = UpstageDocumentParseLoader(file_path,
+    # file_input이 문자열이면 그대로 파일 경로로 사용, 그렇지 않으면 .file.path 사용
+    if isinstance(file_input, str):
+        actual_file_path = file_input
+    else:
+        actual_file_path = file_input.file.path
+
+    loader = UpstageDocumentParseLoader(actual_file_path,
                                           split=split,
                                           output_format=output_format,
                                           ocr=ocr,
@@ -65,7 +71,7 @@ def main(file_path):
     5. 예시로 첫 번째 문서의 내용을 출력함
     """
     # load_document 함수를 사용하여 파일을 읽어옴
-    documents = load_document(file_path=file_path, split="element")
+    documents = load_document(file_path, split="element")
     
     # 전체 읽어온 문서가 몇 개인지 출력함
     print(f"전체 문서 개수: {len(documents)}")
@@ -84,6 +90,6 @@ def main(file_path):
         return None
 
 # 이 파일이 직접 실행될 때 main() 함수를 호출함
-if __name__ == "__main__":
-  file_path = "data\Agentic Search-Enhanced.pdf"
-  main(file_path=file_path)
+# if __name__ == "__main__":
+#   file_path = "data\Agentic Search-Enhanced.pdf"
+#   main(file_path=file_path)
