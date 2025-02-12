@@ -180,7 +180,7 @@ def generate_response(db, query):
   answer_prompt, question_prompt = define_prompts(answer_parser, question_parser)
 
   # Initialize LLM
-  llm = ChatOpenAI(temperature=0, model_name="gpt-4o")
+  llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
 
   # Create Chains
   answer_chain, question_chain = create_chains(llm, answer_prompt, question_prompt, answer_parser, question_parser)
