@@ -1,0 +1,73 @@
+24DOT75/  # 프로젝트의 루트 디렉토리
+│── apps/  # 주요 Django 앱들이 위치
+│   ├── board/  # 게시판 기능을 담당하는 앱
+│   │   ├── __pycache__/  # Python 컴파일된 캐시 파일 저장
+│   │   ├── migrations/  # 데이터베이스 마이그레이션 파일 저장
+│   │   ├── templatetags/  # 커스텀 템플릿 태그를 정의하는 폴더
+│   │   ├── __init__.py  # Python 패키지로 인식하도록 하는 파일
+│   │   ├── admin.py  # Django 관리자(admin)에서 게시판 관리 설정
+│   │   ├── apps.py  # Django 앱 설정
+│   │   ├── context_processors.py  # 템플릿에서 공통 데이터를 추가하는 파일
+│   │   ├── forms.py  # 폼(form) 관련 코드 저장
+│   │   ├── models.py  # 게시판 관련 데이터 모델 정의
+│   │   ├── signals.py  # 모델 이벤트 처리(signals) 정의
+│   │   ├── tests.py  # 앱의 테스트 코드 작성
+│   │   ├── urls.py  # 게시판 관련 URL 라우팅 관리
+│   │   ├── views.py  # 게시판 관련 뷰(views) 정의
+│   ├── user/  # 사용자 관련 기능을 담당하는 앱
+│   │   ├── __pycache__/  # Python 컴파일된 캐시 파일 저장
+│   │   ├── migrations/  # 데이터베이스 마이그레이션 파일 저장
+│   │   ├── __init__.py  # Python 패키지로 인식하도록 하는 파일
+│   │   ├── admin.py  # Django 관리자(admin)에서 사용자 관리 설정
+│   │   ├── apps.py  # Django 앱 설정
+│   │   ├── models.py  # 사용자 관련 데이터 모델 정의
+│   │   ├── tests.py  # 앱의 테스트 코드 작성
+│   │   ├── urls.py  # 사용자 관련 URL 라우팅 관리
+│   │   ├── views.py  # 사용자 관련 뷰(views) 정의
+│── chroma_langchain_db/  # LangChain을 활용한 데이터베이스 관련 파일 저장
+│   ├── 8416cdf1-4c8f-42d2-9.../  # 특정 데이터 파일 저장 폴더
+│   ├── chroma.sqlite3  # ChromaDB SQLite 데이터베이스 파일
+│── config/  # Django 프로젝트의 핵심 설정 파일이 위치
+│   ├── __pycache__/  # Python 컴파일된 캐시 파일 저장
+│   ├── __init__.py  # Python 패키지로 인식하도록 하는 파일
+│   ├── asgi.py  # ASGI 설정 파일 (비동기 웹 서버 설정)
+│   ├── settings.py  # Django 프로젝트의 주요 설정 파일
+│   ├── urls.py  # 프로젝트 전체 URL 라우팅 관리
+│   ├── wsgi.py  # WSGI 설정 파일 (전통적인 웹 서버 설정)
+│── media/  # 업로드된 파일을 저장하는 디렉토리
+│   ├── uploads/  # 업로드된 문서 저장 폴더
+│   │   ├── 06_13_Loader_LLamaPa...  # 업로드된 PDF 파일
+│   │   ├── Semantic_Search.docx  # 업로드된 docx 파일일
+│── pdf_processed/  # 처리된 문서를 저장하는 폴더
+│   ├── __pycache__/  # Python 컴파일된 캐시 파일 저장
+│   ├── database_process.py  # 데이터베이스 관련 처리 코드
+│   ├── llm_process.py  # LLM(대형 언어 모델) 관련 처리 코드
+│   ├── processed_documents.py  # 문서 처리 관련 코드
+│── static/  # 정적 파일(이미지, CSS, JS 등)을 저장하는 폴더
+│   ├── css/  # CSS 스타일 파일 저장
+│   │   ├── style.css  # 메인 스타일시트
+│   ├── images/  # 프로젝트에서 사용되는 이미지 파일 저장
+│   │   ├── jeonju_logo.png  # 전주대학교 로고 이미지
+│   │   ├── jju_background.png  # 전주대학교 배경 이미지
+│   │   ├── jju_logo.jpeg  # 전주대학교 로고 이미지
+│   ├── bootstrap.min.css  # Bootstrap 스타일시트
+│── templates/  # Django 템플릿(HTML) 파일이 저장되는 폴더
+│   ├── admin/  # 관리자(admin) 페이지 관련 템플릿 저장
+│   │   ├── conversation_list.html  # 대화 목록 페이지
+│   │   ├── file_upload_list.html  # 파일 업로드 목록 페이지
+│   ├── board/  # 게시판 관련 템플릿 저장
+│   │   ├── chat.html  # 채팅 페이지
+│   ├── user/  # 사용자 관련 템플릿 저장
+│   │   ├── login.html  # 로그인 페이지
+│   │   ├── signup.html  # 회원가입 페이지
+│   │   ├── base.html  # 공통 템플릿
+│   │   ├── header.html  # 헤더 템플릿
+│   │   ├── index.html  # 메인 페이지
+│── .env  # 환경 변수 설정 파일 (비공개 정보 포함 가능)
+│── .gitignore  # Git에서 제외할 파일 목록
+│── db.sqlite3  # Django 프로젝트의 기본 SQLite 데이터베이스 파일
+│── flowchart.png  # 프로젝트 흐름도 이미지
+│── Front-end_README.md  # 프론트엔드 관련 설명 문서
+│── manage.py  # Django 관리 명령어 실행 파일
+│── README.md  # 프로젝트 설명 파일
+│── requirements.txt  # 프로젝트에서 필요한 패키지 목록

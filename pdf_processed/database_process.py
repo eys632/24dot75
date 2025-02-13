@@ -35,7 +35,10 @@ def add_documents(vector_store, documents):
     """
     all_data = vector_store.get()  # vector_store에서 기존 문서 데이터를 가져옴.
     # print(f"[디버그] 현재 저장된 문서 개수 : {len(all_data['ids'])}, 저장 할 문서 개수 : {len(documents)}")  # 현재 문서 개수와 추가할 문서 개수를 디버그로 출력함.
-    
+# 
+    print("ChromaDB 내 저장된 문서 ID:", all_data.get("ids"))
+    print("ChromaDB 내 저장된 메타데이터:", all_data.get("metadatas"))
+# 
     strat = len(all_data['ids']) + 1  # 시작 인덱스를 기존 문서 개수 + 1로 설정함.
     end = len(documents) + len(all_data['ids']) + 1  # 끝 인덱스를 기존 문서 개수와 추가할 문서 개수를 합산 후 1 더하여 설정함.
     uuids = [str(i) for i in range(strat, end)]  # 새 문서의 id 리스트를 숫자 문자열로 생성함.
@@ -58,4 +61,12 @@ def select_docs(db, query):
     print(f"[디버그] db : {db}")
     retriever = db.as_retriever()
     selected_docs = retriever.invoke(query)
+# 
+    # 각 문서의 파일 이름(또는 source)을 로그에 출력
+    print("[디버그] 참고 문서 목록:")
+    for doc in selected_docs:
+        # 만약 file_name 키가 없다면 다른 키를 확인하거나, None일 경우 '알 수 없음'을 출력함.
+        file_name = doc.metadata.get("file_name") or "알 수 없음"
+        print(f" - {file_name}")
+# 
     return selected_docs  # 선택된 문서들의 리스트를 반환함.

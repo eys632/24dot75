@@ -36,7 +36,7 @@ def question_output_parser():
                 False indicates that the answer is incomplete or needs improvement."""
             )
         )
-        scroe: float = Field(
+        score: float = Field(
             description=(
                 """The score (value between 0.0 and 1.0) of the LLM-generated answer."""
             )
@@ -185,7 +185,7 @@ def generate_response(db, query):
   # Create Chains
   answer_chain, question_chain = create_chains(llm, answer_prompt, question_prompt, answer_parser, question_parser)
 
-  for i in range(10):
+  for i in range(2):
     mmr_docs = select_docs(db, query)
 
     # Execute Chains and Get Results
