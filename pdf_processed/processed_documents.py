@@ -15,13 +15,13 @@ Document = namedtuple("Document", ["metadata", "page_content"])
 def load_document(file_input,
                   split: str = "page",
                   output_format: str = "html",
-                  ocr: str = "auto",
+                  ocr: str = "force",
                   coordinates: bool = False) -> List[Document]:
     """
     파일 경로에 있는 문서를 읽고, 문서 내용을 Document 자료형의 리스트로 만들어 줌
     
     매개변수:
-      - file_path (str): 읽어올 문서 파일의 경로임
+      - file_input: 읽어올 문서 파일의 경로임
       - split (str): 문서를 나누는 단위임 (기본값은 한 페이지씩("page")임. 'none', 'page', 'element' 중 하나임)
       - output_format (str): 출력 형식임 (기본값은 "html"임. 'text', 'html', 'markdown' 중 하나임)
       - ocr (str): OCR(이미지에서 글자 읽기) 모드임 (기본값은 "auto"임)
@@ -42,7 +42,17 @@ def load_document(file_input,
                                           ocr=ocr,
                                           coordinates=coordinates)
     docs = loader.load()
-    return docs
+# 
+    # 각 문서의 metadata에 file_name 추가 (파일명 추출)
+    file_name = os.path.basename(actual_file_path)
+    enhanced_docs = []
+    for doc in docs:
+        new_metadata = dict(doc.metadata)
+        new_metadata["file_name"] = file_name
+        # Document은 namedtuple("Document", ["metadata", "page_content"])
+        enhanced_docs.append(Document(metadata=new_metadata, page_content=doc.page_content))
+# 
+    return enhanced_docs
 
 def filter_tegs(documents: List[Document]) -> List[Document]:
     """
@@ -62,27 +72,23 @@ def filter_tegs(documents: List[Document]) -> List[Document]:
 
 def main(file_path):
     """
-    프로그램의 시작 부분임
+    파일 경로에 있는 문서를 읽어와서 전처리한 후, Document 객체 리스트를 반환함.
     
-    1. 파일 경로에 있는 문서를 읽어옴
-    2. 전체 문서 개수를 출력함
-    3. 머리글(header)과 꼬리글(footer)을 제외한 문서를 골라냄
-    4. 필터링된 문서 개수를 출력함
-    5. 예시로 첫 번째 문서의 내용을 출력함
+    1. 파일을 읽어온 후 전체 문서 개수를 출력
+    2. 머리글/푸터를 제외한 문서 개수를 출력
+    3. 필터링된 문서가 있으면 이를 반환, 없으면 None을 반환
     """
-    # load_document 함수를 사용하여 파일을 읽어옴
-    documents = load_document(file_path, split="element")
-    
-    # 전체 읽어온 문서가 몇 개인지 출력함
+    try:
+        documents = load_document(file_path, split="element")
+    except Exception as e:
+        print(f"Error in load_document for file {file_path}: {e}")
+        return []  # 예외 발생 시 빈 리스트 반환
+
     print(f"전체 문서 개수: {len(documents)}")
     
-    # filter_non_headers 함수를 사용해서 머리글과 꼬리글이 아닌 문서를 골라냄
     filtered_documents = filter_tegs(documents)
-    
-    # 필터링된 문서가 몇 개인지 출력함
     print(f"헤더/푸터 제외 후 문서 개수: {len(filtered_documents)}")
     
-    # 예시: 필터링된 문서가 있다면 첫 번째 문서의 내용을 출력함
     if filtered_documents:
         return filtered_documents
     else:
