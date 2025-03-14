@@ -92,7 +92,13 @@ def stream_answer(request):
             )
 
         def token_generator():
-            answer_result, _ = generate_response(vector_store, question)
+            # answer_result, _ = generate_response(vector_store, question)
+            
+            answer_result = {
+                "conclusion": {"conclusion": ["임의 답변 예시"]},
+                "reason": "테스트를 위한 임의의 응답입니다."
+            }
+
             try:
                 tokens = answer_result.get("conclusion", {}).get("conclusion", [])
                 if not tokens:

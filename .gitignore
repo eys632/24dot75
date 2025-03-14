@@ -2,3 +2,7 @@
 .venv
 pdf_processed\test.ipynb
 __pycache__
+
+chroma.sqlite3
+chroma_langchain_db
+db.sqlite3
