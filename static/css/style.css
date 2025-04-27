@@ -5,11 +5,18 @@
 
 /* 고정 사이드바 토글 버튼 위치 */
 #sidebar-toggle {
-    position: fixed;
+    /* position: fixed;
     left: 0;
     top: 50%;
-    z-index: 9999;
-    display: none;
+    z-index: 9999; */
+    display: inline-block;
+    position: static;
+
+}
+
+/* 사이드바 스타일 */
+#sidebar {
+    max-width: 250px;
 }
 
 /* 챗봇 대화창 스타일 */

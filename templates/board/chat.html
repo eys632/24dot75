@@ -1,235 +1,215 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block content %}
 <div class="container-fluid">
-  <!-- 헤더 영역: 전주대학교 로고 및 챗봇 제목 -->
-  <header class="py-3" style="background-color: #003366; color: white; text-align: center;">
-      <img src="{% static 'images/jeonju_logo.png' %}" alt="전주대학교 로고" style="height: 50px;">
-      <h2 style="font-family: 'JeonjuFont', sans-serif;">전주대학교 챗봇</h2>
-  </header>
-  <div class="row" style="height: calc(100vh - 130px);">
-    <!-- 좌측 사이드바 -->
-    <div class="col-md-3" id="sidebar" style="max-width:250px; border-right: 1px solid #ddd; background-color: #f8f9fa; height: 100%; overflow-y: auto;">
-      <div id="sidebar-header" class="d-flex align-items-center justify-content-between px-2 py-2" style="border-bottom: 1px solid #ddd;">
-          <h4 style="font-family: 'JeonjuFont', sans-serif; color: #003366; margin:0;">대화 기록</h4>
-          <button id="sidebar-close" class="btn btn-outline-light btn-sm" style="width:40px; height:40px;">
-              <i class="bi bi-x-lg"></i>
+  <div class="row">
+    <!-- (1) 사이드바: md 이상에서 3칸, 작은 화면에서 12칸 -->
+    <div id="sidebar" 
+    class="col-12 col-md-3 bg-light p-3" 
+    style="position: sticky; height: calc(100vh - 56px); overflow-y: auto; background-color: #3a3a3a;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">대화 기록</h5>
+          <!-- 사이드바 닫기 버튼 -->
+          <button id="sidebar-close" class="btn btn-sm btn-light">
+            <i class="bi bi-x-lg"></i>
           </button>
-      </div>
-      <a href="{% url 'board:chat' %}" class="btn btn-primary btn-block my-3 mx-2" id="new-chat-btn" style="background-color: #003366; border: none;">
-          새 채팅 시작
-      </a>
-      <div id="conversation-list" class="px-2">
-      {% for conv in conversation_list %}
-          {% with rep=conv.messages.all|slice:":2" %}
-              <a href="{% url 'board:chat_detail' conv.id %}" class="btn btn-outline-primary btn-block mb-2" style="font-family: 'JeonjuFont', sans-serif;">
-                  {% if rep.0 %}
-                      {{ rep.0.message|truncatechars:20 }}
-                  {% endif %}
-                  {% if rep.1 %}
-                      / {{ rep.1.message|truncatechars:20 }}
-                  {% endif %}
-              </a>
-          {% endwith %}
-      {% empty %}
-          <p style="padding: 10px; font-family: 'JeonjuFont', sans-serif;">대화 기록이 없습니다.</p>
-      {% endfor %}
-      </div>
+        </div>
+        
+        <a href="{% url 'board:chat' %}" class="btn btn-primary btn-block mb-2">새 채팅 시작</a>
+        <div class="list-group list-group-flush">
+          {% for conv in conversation_list %}
+            <a href="{% url 'board:chat_detail' conv.id %}"
+               class="list-group-item list-group-item-action
+                      {% if active_conversation and active_conversation.id == conv.id %}
+                        active
+                      {% endif %}">
+              {{ conv.title }}
+            </a>
+          {% empty %}
+            <span class="list-group-item">대화 기록이 없습니다.</span>
+          {% endfor %}
+        </div>
     </div>
-    <!-- 우측 메인 영역 -->
-    <div class="col-md-9 p-0" id="main-chat" style="position: relative; background-color: #ffffff; height: 100%;">
-      <div class="chat-window" style="height: 100%; padding-bottom: 100px; overflow-y: auto;">
-          <div class="chat-messages" id="chat-messages" style="padding: 15px;">
-              {% if active_conversation %}
-                  {% for message in messages %}
-                      {% if message.is_user %}
-                          <div class="chat-message user-message mb-2" style="text-align: right; font-family: 'JeonjuFont', sans-serif;">
-                              <p><strong>나:</strong> {{ message.message|linebreaks }}</p>
-                          </div>
-                      {% else %}
-                          <div class="chat-message bot-message mb-2" style="text-align: left; font-family: 'JeonjuFont', sans-serif; background-color: #e9ecef; padding: 8px; border-radius: 5px;">
-                              <p><strong>챗봇:</strong> {{ message.message|linebreaks }}</p>
-                          </div>
-                      {% endif %}
-                  {% endfor %}
-              {% else %}
-                  <p style="padding: 10px; font-family: 'JeonjuFont', sans-serif;">대화를 시작하려면 왼쪽에서 새 채팅을 선택하세요.</p>
-              {% endif %}
-          </div>
-      </div>
-      <!-- 질문 입력 창: admin이면 위치를 위로 띄워서 파일 업로드 폼과 겹치지 않게 함 -->
-      <div class="chat-input" style="position: fixed; bottom: {% if user.is_staff %}140px{% else %}0{% endif %}; left: 50%; transform: translateX(-50%); width: 70%; max-width: 800px; background: #ffffff; padding: 10px; border-top: 1px solid #ddd;">
-          <form id="chat-form">
-              {% csrf_token %}
-              <div class="form-group">
-                  {{ form.question }}
+
+    <!-- (2) 채팅 영역: md 이상에서 9칸, 작은 화면에서 12칸 -->
+    <div class="col-12 col-md-9 d-flex justify-content-center" style="position: relative;">
+        <div style="max-width: 800px; width: 100%;">
+      <!-- (2-1) 채팅 메시지 영역 -->
+      <div id="chat-messages" class="p-3" style="padding-bottom: 150px; overflow-y: auto;">
+        {% if active_conversation %}
+          {% for message in messages %}
+            {% if message.is_user %}
+              <div class="chat-message user-message mb-2 text-right">
+                <p><strong>나:</strong> {{ message.message|linebreaks }}</p>
               </div>
-              <button type="submit" class="btn btn-primary mt-2" id="submit-btn" style="background-color: #003366; border: none;">
-                  전송
-              </button>
-          </form>
+            {% else %}
+              <div class="chat-message bot-message mb-2 text-left bg-light p-2 rounded">
+                <p><strong>챗봇:</strong> {{ message.message|linebreaks }}</p>
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p class="p-3">대화를 시작하려면 왼쪽에서 새 채팅을 선택하세요.</p>
+        {% endif %}
       </div>
-      <!-- 파일 업로드 폼 (관리자 전용) -->
-      {% if user.is_staff %}
-      <div class="file-upload" style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 70%; max-width: 800px; background: #ffffff; padding: 10px; border-top: 1px solid #ddd;">
+
+      <!-- (2-2) 입력 영역: position: sticky로 화면 하단에 고정 -->
+      <div class="bg-white border-top p-3" style="
+        position: sticky; 
+        bottom: 0; 
+        left: 0; 
+        width: 100%;
+        z-index: 10;
+      ">
+        {% if active_conversation %}
+          <script>
+            window.currentConversationId = "{{ active_conversation.id }}";
+          </script>
+        {% else %}
+          <script>
+            window.currentConversationId = null;
+          </script>
+        {% endif %}
+
+        <!-- 질문 입력 폼 -->
+        <form id="chat-form" class="mb-2">
+          {% csrf_token %}
+          <div class="input-group">
+            <input type="text" name="question" class="form-control" placeholder="질문을 입력하세요...">
+            <div class="input-group-append">
+              <button type="submit" class="btn btn-primary">전송</button>
+            </div>
+          </div>
+        </form>
+
+        <!-- 파일 업로드 (관리자 전용) -->
+        {% if user.is_staff %}
           <form id="upload-form" action="{% url 'board:upload_file' %}" method="post" enctype="multipart/form-data">
-              {% csrf_token %}
-              <input type="file" name="file" id="file-input" class="form-control">
-              <button type="submit" class="btn btn-secondary mt-2" id="upload-btn">파일 업로드</button>
+            {% csrf_token %}
+            <div class="custom-file">
+              <input type="file" name="file" id="file-input" class="custom-file-input">
+              <label class="custom-file-label" for="file-input">파일 선택</label>
+            </div>
+            <button type="submit" class="btn btn-secondary btn-block mt-2">파일 업로드</button>
+            <div id="upload-result" class="mt-2"></div>
           </form>
-          <div id="upload-result"></div>
+        {% endif %}
       </div>
-      {% endif %}
     </div>
-  </div>
-  <div id="sidebar-toggle" style="position: fixed; left: 0; top: 50%; z-index: 9999; display: none;">
-      <button class="btn btn-outline-secondary btn-sm" style="width:40px; height:40px;">
-          <i class="bi bi-list"></i>
-      </button>
+    </div>
   </div>
 </div>
+
 <script>
-// 사이드바 토글 및 폼 제출, 스트리밍 처리 관련 JS 코드 (기존 코드 유지)
-var currentConversationId = "";
-{% if active_conversation %}
-    currentConversationId = '{{ active_conversation.id }}';
-{% endif %}
-console.log("Current Conversation ID:", currentConversationId);
-
+// (A) 사이드바 열기/닫기
 const sidebar = document.getElementById('sidebar');
-const sidebarToggle = document.getElementById('sidebar-toggle');
 const sidebarCloseBtn = document.getElementById('sidebar-close');
+const sidebarToggleBtn = document.getElementById('sidebar-toggle');
 
-sidebarCloseBtn.addEventListener('click', function(){
-    sidebar.style.display = 'none';
-    sidebarToggle.style.display = 'block';
-});
-sidebarToggle.addEventListener('click', function(){
-    sidebar.style.display = 'block';
-    sidebarToggle.style.display = 'none';
+// 닫기 버튼 -> 사이드바 숨김
+sidebarCloseBtn.addEventListener('click', function() {
+  sidebar.classList.add('d-none');
 });
 
-const textAreaElem = document.querySelector('#chat-form textarea, #chat-form input[type="text"]');
-if (textAreaElem) {
-    textAreaElem.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            document.getElementById('chat-form').dispatchEvent(new Event('submit', { bubbles: true }));
-        }
-    });
-}
+// 열기 버튼 -> 사이드바 표시
+sidebarToggleBtn?.addEventListener('click', function() {
+  sidebar.classList.remove('d-none');
+});
 
+// (B) 채팅 폼 전송
 document.getElementById('chat-form').addEventListener('submit', function(e){
-    e.preventDefault();
-    const form = e.target;
-    const textarea = form.querySelector('textarea');
-    const question = textarea.value;
-    if (!question.trim()) return;
-    const chatMessages = document.getElementById('chat-messages');
-    const userMessageElem = document.createElement('div');
-    userMessageElem.className = 'chat-message user-message mb-2';
-    userMessageElem.style.textAlign = 'right';
-    userMessageElem.innerHTML = `<p><strong>나:</strong> ${question.replace(/\n/g, '<br>')}</p>`;
-    chatMessages.appendChild(userMessageElem);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+  e.preventDefault();
+  const form = e.target;
+  const questionInput = form.querySelector('input[name="question"]');
+  const question = questionInput.value.trim();
+  if (!question) return;
 
-    let uniqueId = Date.now();
-    const answerMessageElem = document.createElement('div');
-    answerMessageElem.className = 'chat-message bot-message mb-2';
-    answerMessageElem.style.textAlign = 'left';
-    answerMessageElem.innerHTML = `<p><strong>챗봇:</strong> <span id="answer-text-${uniqueId}"></span></p>`;
-    chatMessages.appendChild(answerMessageElem);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+  const chatMessages = document.getElementById('chat-messages');
 
-    const reasonElem = document.createElement('div');
-    reasonElem.id = `reason-text-${uniqueId}`;
-    reasonElem.style.fontSize = '0.8em';
-    reasonElem.style.marginTop = '5px';
-    reasonElem.style.display = 'none';
-    answerMessageElem.appendChild(reasonElem);
+  // 사용자 메시지 표시
+  const userMessageElem = document.createElement('div');
+  userMessageElem.className = 'chat-message user-message mb-2 text-right';
+  userMessageElem.innerHTML = `<p><strong>나:</strong> ${question}</p>`;
+  chatMessages.appendChild(userMessageElem);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    const spinnerElem = document.createElement('span');
-    spinnerElem.id = `spinner-${uniqueId}`;
-    spinnerElem.className = 'spinner-border spinner-border-sm text-primary ms-2';
-    spinnerElem.setAttribute('role', 'status');
-    spinnerElem.style.display = 'inline-block';
-    answerMessageElem.querySelector('p').appendChild(spinnerElem);
+  // 서버 전송
+  const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+  const formData = new FormData();
+  formData.append('question', question);
+  if (window.currentConversationId) {
+    formData.append('conversation_id', window.currentConversationId);
+  }
 
-    const formData = new FormData();
-    formData.append('question', question);
-    if (currentConversationId) {
-        formData.append('conversation_id', currentConversationId);
+  fetch("{% url 'board:stream_answer' %}", {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrfToken },
+    body: formData
+  })
+  .then(response => {
+    const convId = response.headers.get('X-Conversation-ID');
+    if (convId && !window.currentConversationId) {
+      window.currentConversationId = convId;
     }
-    const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+    return response.body;
+  })
+  .then(body => {
+    const reader = body.getReader();
+    const decoder = new TextDecoder();
+    let accumulatedText = '';
 
-    fetch("{% url 'board:stream_answer' %}", {
-        method: 'POST',
-        headers: { 'X-CSRFToken': csrfToken },
-        body: formData
-    }).then(response => {
-        const convId = response.headers.get('X-Conversation-ID');
-        if (convId && !currentConversationId) {
-            currentConversationId = convId;
-        }
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let accumulatedText = "";
-        const answerTextElem = document.getElementById(`answer-text-${uniqueId}`);
-        function read() {
-            reader.read().then(({ done, value }) => {
-                if (done) {
-                    spinnerElem.style.display = 'none';
-                    return;
-                }
-                const chunk = decoder.decode(value, {stream: true});
-                accumulatedText += chunk;
-                if (accumulatedText.indexOf('[[REASON_DELIMITER]]') !== -1) {
-                    let parts = accumulatedText.split('[[REASON_DELIMITER]]');
-                    answerTextElem.innerHTML = parts[0];
-                    reasonElem.style.display = 'block';
-                    reasonElem.innerHTML = "<small>" + parts.slice(1).join('[[REASON_DELIMITER]]') + "</small>";
-                } else {
-                    answerTextElem.innerHTML = accumulatedText;
-                }
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                read();
-            });
-        }
-        read();
-    }).catch(error => {
-        console.error('Error during streaming:', error);
-        spinnerElem.style.display = 'none';
-    });
-    textarea.value = '';
+    // 봇 답변 메시지
+    const botMessageElem = document.createElement('div');
+    botMessageElem.className = 'chat-message bot-message mb-2 text-left bg-light p-2 rounded';
+    botMessageElem.innerHTML = `<p><strong>챗봇:</strong> <span id="answer-text"></span></p>`;
+    chatMessages.appendChild(botMessageElem);
+    const answerTextElem = botMessageElem.querySelector('#answer-text');
+
+    const readStream = () => {
+      reader.read().then(({ done, value }) => {
+        if (done) return;
+        const chunk = decoder.decode(value, { stream: true });
+        accumulatedText += chunk;
+        answerTextElem.innerHTML = accumulatedText;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        readStream();
+      });
+    };
+    readStream();
+  })
+  .catch(error => {
+    console.error('Error during streaming:', error);
+  });
+
+  questionInput.value = '';
 });
-// 
-// 파일 업로드 폼 제출 이벤트 핸들러 추가
+
+// (C) 파일 업로드
 document.getElementById('upload-form')?.addEventListener('submit', function(e) {
-    e.preventDefault(); // 기본 제출 동작 방지
-    const form = e.target;
-    const formData = new FormData(form);
-    const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    fetch(form.action, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': csrfToken },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        const resultElem = document.getElementById('upload-result');
-        if(data.status === "success") {
-            resultElem.innerHTML = `<p class="text-success">파일 업로드 성공: ${data.file_name}</p>`;
-        } else {
-            resultElem.innerHTML = `<p class="text-danger">파일 업로드 실패: ${data.message}</p>`;
-        }
-    })
-    .catch(error => {
-        console.error('파일 업로드 오류:', error);
-        document.getElementById('upload-result').innerHTML = `<p class="text-danger">파일 업로드 중 오류 발생</p>`;
-    });
-});
+  e.preventDefault();
+  const form = e.target;
+  const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+  const formData = new FormData(form);
 
-// 
+  fetch(form.action, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrfToken },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    const resultElem = document.getElementById('upload-result');
+    if (data.status === 'success') {
+      resultElem.innerHTML = `<p class="text-success">파일 업로드 성공: ${data.file_name}</p>`;
+    } else {
+      resultElem.innerHTML = `<p class="text-danger">파일 업로드 실패: ${data.message}</p>`;
+    }
+  })
+  .catch(error => {
+    console.error('파일 업로드 오류:', error);
+    document.getElementById('upload-result').innerHTML = `<p class="text-danger">파일 업로드 중 오류 발생</p>`;
+  });
+});
 </script>
 {% endblock %}
