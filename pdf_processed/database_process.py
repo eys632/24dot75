@@ -1,11 +1,11 @@
 from langchain_community.document_loaders import TextLoader
 from langchain_chroma import Chroma
-from langchain_upstage import UpstageEmbeddings
+from langchain.embeddings import FakeEmbeddings
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def create_vector_store(collection_name, db_path, passage_embeddings=UpstageEmbeddings(model="solar-embedding-1-large-passage")):
+def create_vector_store(collection_name, db_path, passage_embeddings=None):
     """
     백터 스토어를 생성함.
     매개변수:
@@ -15,13 +15,14 @@ def create_vector_store(collection_name, db_path, passage_embeddings=UpstageEmbe
     반환값:
       - 생성된 백터 스토어 객체.
     """
-    # Chroma 객체를 생성함.
+    if passage_embeddings is None:
+        passage_embeddings = FakeEmbeddings(size=768)
+    
     vector_store = Chroma(
-        collection_name=collection_name,  # 컬렉션 이름을 지정함.
-        embedding_function=passage_embeddings,  # 임베딩 함수를 지정함.
-        persist_directory=db_path,  # 데이터 저장 경로를 지정함.
+        collection_name=collection_name,
+        embedding_function=passage_embeddings,
+        persist_directory=db_path,
     )
-    # 생성된 백터 스토어 객체를 반환함.
     return vector_store
 
 def add_documents(vector_store, documents):
