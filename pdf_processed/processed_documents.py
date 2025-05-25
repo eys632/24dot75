@@ -1,15 +1,74 @@
-# 필요한 라이브러리를 가져옴
-from langchain_upstage import UpstageDocumentParseLoader  # 문서를 읽어오는 도구임
-from datetime import datetime  # 현재 시간을 사용하기 위해 가져옴
-from dotenv import load_dotenv  # 환경 변수를 사용하기 위해 가져옴
-from typing import List  # 리스트 타입을 표시할 때 사용함
-from collections import namedtuple  # 이름 붙은 튜플(namedtuple)을 사용함
-import os  # 환경 변수를 사용하기 위해 가져옴
+# # 필요한 라이브러리를 가져옴
+# from langchain_upstage import UpstageDocumentParseLoader  # 문서를 읽어오는 도구임
+# from datetime import datetime  # 현재 시간을 사용하기 위해 가져옴
+# from dotenv import load_dotenv  # 환경 변수를 사용하기 위해 가져옴
+# from typing import List  # 리스트 타입을 표시할 때 사용함
+# from collections import namedtuple  # 이름 붙은 튜플(namedtuple)을 사용함
+# import os  # 환경 변수를 사용하기 위해 가져옴
+
+# load_dotenv()
+
+# # Document라는 이름의 자료형을 만듦
+# # 이 자료형은 문서의 정보(metadata)와 실제 내용(page_content)을 저장함
+# Document = namedtuple("Document", ["metadata", "page_content"])
+
+# def load_document(file_input,
+#                   split: str = "page",
+#                   output_format: str = "html",
+#                   ocr: str = "force",
+#                 #   coordinates=False):
+#                   coordinates: bool = False) -> List[Document]:
+#     """
+#     파일 경로에 있는 문서를 읽고, 문서 내용을 Document 자료형의 리스트로 만들어 줌
+    
+#     매개변수:
+#       - file_input: 읽어올 문서 파일의 경로임
+#       - split (str): 문서를 나누는 단위임 (기본값은 한 페이지씩("page")임. 'none', 'page', 'element' 중 하나임)
+#       - output_format (str): 출력 형식임 (기본값은 "html"임. 'text', 'html', 'markdown' 중 하나임)
+#       - ocr (str): OCR(이미지에서 글자 읽기) 모드임 (기본값은 "auto"임)
+#       - coordinates (bool): 페이지 내 위치 정보를 포함할지 여부임 (기본값은 True임)
+    
+#     반환값:
+#       - Document 객체들이 들어있는 리스트를 반환함
+#     """
+#     # file_input이 문자열이면 그대로 파일 경로로 사용, 그렇지 않으면 .file.path 사용
+#     if isinstance(file_input, str):
+#         actual_file_path = file_input
+#     else:
+#         actual_file_path = file_input.file.path
+
+#     loader = UpstageDocumentParseLoader(actual_file_path,
+#                                           split=split,
+#                                           output_format=output_format,
+#                                           ocr=ocr,
+#                                           coordinates=coordinates)
+#     docs = loader.load()
+# # 
+#     # 각 문서의 metadata에 file_name 추가 (파일명 추출)
+#     file_name = os.path.basename(actual_file_path)
+#     enhanced_docs = []
+#     for doc in docs:
+#         new_metadata = dict(doc.metadata)
+#         new_metadata["file_name"] = file_name
+#         # Document은 namedtuple("Document", ["metadata", "page_content"])
+#         enhanced_docs.append(Document(metadata=new_metadata, page_content=doc.page_content))
+# # 
+#     return enhanced_docs
+
+# 필요한 라이브러리 추가
+from langchain_upstage import UpstageDocumentParseLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader  # 추가: 대체 로더
+from datetime import datetime
+from dotenv import load_dotenv
+from typing import List
+from collections import namedtuple
+import os
+import tempfile  # 추가: 임시 파일 처리용
+import shutil    # 추가: 파일 복사용
+import uuid      # 추가: 고유 파일명 생성용
 
 load_dotenv()
 
-# Document라는 이름의 자료형을 만듦
-# 이 자료형은 문서의 정보(metadata)와 실제 내용(page_content)을 저장함
 Document = namedtuple("Document", ["metadata", "page_content"])
 
 def load_document(file_input,
@@ -35,24 +94,71 @@ def load_document(file_input,
         actual_file_path = file_input
     else:
         actual_file_path = file_input.file.path
-
-    loader = UpstageDocumentParseLoader(actual_file_path,
-                                          split=split,
-                                          output_format=output_format,
-                                          ocr=ocr,
-                                          coordinates=coordinates)
-    docs = loader.load()
-# 
-    # 각 문서의 metadata에 file_name 추가 (파일명 추출)
+    
+    # 원본 파일명과 확장자 추출
     file_name = os.path.basename(actual_file_path)
-    enhanced_docs = []
-    for doc in docs:
-        new_metadata = dict(doc.metadata)
-        new_metadata["file_name"] = file_name
-        # Document은 namedtuple("Document", ["metadata", "page_content"])
-        enhanced_docs.append(Document(metadata=new_metadata, page_content=doc.page_content))
-# 
-    return enhanced_docs
+    file_ext = os.path.splitext(file_name)[1].lower()
+    
+    try:
+        # 방법 1: 임시 파일을 사용하여 한글 경로 문제 해결
+        temp_dir = tempfile.mkdtemp()
+        temp_file_name = f"temp_{uuid.uuid4().hex}{file_ext}"
+        temp_file_path = os.path.join(temp_dir, temp_file_name)
+        
+        # 원본 파일을 임시 파일로 복사
+        shutil.copy2(actual_file_path, temp_file_path)
+        
+        # 파일 확장자에 따라 적절한 로더 선택
+        docs = []
+        if file_ext.lower() in ['.pdf']:
+            try:
+                # 먼저 Upstage 로더 시도
+                loader = UpstageDocumentParseLoader(
+                    temp_file_path,
+                    split=split,
+                    output_format=output_format,
+                    ocr=ocr,
+                    coordinates=coordinates
+                )
+                docs = loader.load()
+            except Exception as e:
+                print(f"Upstage 로더 실패, PyPDFLoader로 시도: {e}")
+                # 실패 시 PyPDFLoader 사용
+                loader = PyPDFLoader(temp_file_path)
+                docs = loader.load()
+        elif file_ext.lower() in ['.txt']:
+            # 텍스트 파일은 TextLoader 사용
+            loader = TextLoader(temp_file_path, encoding='utf-8')
+            docs = loader.load()
+        else:
+            # 기타 파일은 Upstage 로더 사용
+            loader = UpstageDocumentParseLoader(
+                temp_file_path,
+                split=split,
+                output_format=output_format,
+                ocr=ocr,
+                coordinates=coordinates
+            )
+            docs = loader.load()
+            
+        # 임시 디렉토리 제거
+        shutil.rmtree(temp_dir)
+        
+        # 메타데이터에 원본 파일명 추가
+        enhanced_docs = []
+        for doc in docs:
+            new_metadata = dict(doc.metadata)
+            new_metadata["file_name"] = file_name
+            enhanced_docs.append(Document(metadata=new_metadata, page_content=doc.page_content))
+        
+        return enhanced_docs
+        
+    except Exception as e:
+        print(f"모든 로더 시도 실패: {file_name}, 오류: {e}")
+        # 임시 디렉토리가 존재한다면 정리
+        if 'temp_dir' in locals() and os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        return []
 
 def filter_tegs(documents: List[Document]) -> List[Document]:
     """

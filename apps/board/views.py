@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import StreamingHttpResponse, JsonResponse
 from .forms import ChatForm
 from .models import ChatMessage, Conversation, UploadedFile
-from langchain_upstage import UpstageEmbeddings
+# from langchain_upstage import UpstageEmbeddings
+from langchain_openai import OpenAIEmbeddings
 
 from pdf_processed.processed_documents import main  # PDF 텍스트 추출 함수 (수정된 load_document 포함)
 from pdf_processed.database_process import create_vector_store, add_documents
@@ -19,7 +20,8 @@ load_dotenv()
 
 collection_name = "example_collection"
 db_path = "chroma_langchain_db"
-passage_embeddings = UpstageEmbeddings(model="solar-embedding-1-large-passage")
+# passage_embeddings = UpstageEmbeddings(model="solar-embedding-1-large-passage")
+passage_embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
 # vector_store 생성 (persist_directory와 collection_name을 이용하여 기존 데이터를 로드)
 vector_store = create_vector_store(collection_name, db_path, passage_embeddings)
@@ -92,12 +94,12 @@ def stream_answer(request):
             )
 
         def token_generator():
-            # answer_result, _ = generate_response(vector_store, question)
+            answer_result, _ = generate_response(vector_store, question)
             
-            answer_result = {
-                "conclusion": {"conclusion": ["임의 답변 예시"]},
-                "reason": "테스트를 위한 임의의 응답입니다."
-            }
+            # answer_result = {
+            #     "conclusion": {"conclusion": ["임의 답변 예시"]},
+            #     "reason": "테스트를 위한 임의의 응답입니다."
+            # }
 
             try:
                 tokens = answer_result.get("conclusion", {}).get("conclusion", [])

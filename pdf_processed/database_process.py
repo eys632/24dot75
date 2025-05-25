@@ -1,11 +1,14 @@
 from langchain_community.document_loaders import TextLoader
 from langchain_chroma import Chroma
 from langchain_upstage import UpstageEmbeddings
+from langchain_openai import OpenAIEmbeddings
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def create_vector_store(collection_name, db_path, passage_embeddings=UpstageEmbeddings(model="solar-embedding-1-large-passage")):
+# def create_vector_store(collection_name, db_path, passage_embeddings=UpstageEmbeddings(model="solar-embedding-1-large-passage")):
+def create_vector_store(collection_name, db_path, passage_embeddings=OpenAIEmbeddings(model="text-embedding-3-small")):
     """
     백터 스토어를 생성함.
     매개변수:
