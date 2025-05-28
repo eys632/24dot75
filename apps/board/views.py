@@ -19,7 +19,7 @@ load_dotenv()
 # --- Persistent Vector Store 초기화 (서버 시작 시 한 번 실행) ---
 
 collection_name = "example_collection"
-db_path = "chroma_langchain_db"
+db_path = os.path.join(settings.BASE_DIR, "vector_data", "chroma_langchain_db") # 경로 수정
 # passage_embeddings = UpstageEmbeddings(model="solar-embedding-1-large-passage")
 passage_embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 

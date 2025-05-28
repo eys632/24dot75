@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-z4o77(b%$d)y!3_#u)im^e5hs#xg8@_ij*^_l#v0!&=0pz!c$$"
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # 모든 호스트에서 접근 허용
 
 INSTALLED_APPS = [
     "django.contrib.admin",
