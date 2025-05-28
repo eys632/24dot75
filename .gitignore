@@ -6,3 +6,18 @@ __pycache__
 chroma.sqlite3
 chroma_langchain_db
 db.sqlite3
+# System files
+.bash*
+.profile
+.sudo_as_admin_successful
+.cache/
+.ssh/
+.vscode-server/
+.aws/
+.wget-hsts
+.dotnet/
+awscliv2.zip
+aws/
+project_backup.tar.gz
+project_files_backup_git_cloning/
+vector_data/
