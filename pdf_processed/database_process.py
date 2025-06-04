@@ -51,18 +51,27 @@ def add_documents(vector_store, documents):
 
     return vector_store  # 변경된 vector_store 객체를 반환함.
 
-def select_docs(db, query):
+def select_docs(db, query, k=10):
     """
     데이터베이스에서 쿼리에 대한 문서를 선택함.
     매개변수:
       - db (Chroma): 문서 저장소 객체임.
       - query (str): 쿼리 문장임.
+      - k (int): 검색할 문서 개수 (기본값: 10)
     반환값:
       - 선택된 문서들의 리스트.
     """
     # 쿼리를 사용하여 문서를 선택함.
     print(f"[디버그] db : {db}")
-    retriever = db.as_retriever()
+    # MMR(Maximal Marginal Relevance)을 사용하여 다양성 있는 문서 검색
+    retriever = db.as_retriever(
+        search_type="mmr",  # MMR 방식으로 검색 (유사도 + 다양성)
+        search_kwargs={
+            "k": k,           # 검색할 문서 개수
+            "fetch_k": k * 2, # 후보 문서 개수 (더 많은 후보에서 선별)
+            "lambda_mult": 0.7 # 다양성 vs 유사도 균형 (0.7 = 유사도 중심)
+        }
+    )
     selected_docs = retriever.invoke(query)
 # 
     # 각 문서의 파일 이름(또는 source)을 로그에 출력
