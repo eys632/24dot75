@@ -81,18 +81,25 @@
               <button type="submit" class="btn btn-primary">전송</button>
             </div>
           </div>
-        </form>
-
-        <!-- 파일 업로드 (관리자 전용) -->
+        </form>        <!-- 파일 업로드 (관리자 전용) -->
         {% if user.is_staff %}
           <form id="upload-form" action="{% url 'board:upload_file' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="custom-file">
-              <input type="file" name="file" id="file-input" class="custom-file-input">
-              <label class="custom-file-label" for="file-input">파일 선택</label>
+            <div class="custom-file mb-2">
+              <input type="file" name="files" id="file-input" class="custom-file-input" multiple accept=".pdf,.txt,.doc,.docx">
+              <label class="custom-file-label" for="file-input">여러 파일 선택 (PDF, TXT, DOC)</label>
             </div>
-            <button type="submit" class="btn btn-secondary btn-block mt-2">파일 업로드</button>
+            <div class="mb-2">
+              <small class="text-muted">Ctrl/Cmd + 클릭으로 여러 파일을 선택하거나, 폴더에서 드래그하여 한번에 업로드할 수 있습니다.</small>
+            </div>
+            <button type="submit" class="btn btn-secondary btn-block">파일 업로드</button>
             <div id="upload-result" class="mt-2"></div>
+            <div id="upload-progress" class="mt-2" style="display: none;">
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+              </div>
+              <small class="text-muted">업로드 진행 상황</small>
+            </div>
           </form>
         {% endif %}
       </div>
@@ -190,25 +197,67 @@ document.getElementById('upload-form')?.addEventListener('submit', function(e) {
   e.preventDefault();
   const form = e.target;
   const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
-  const formData = new FormData(form);
-
-  fetch(form.action, {
-    method: 'POST',
-    headers: { 'X-CSRFToken': csrfToken },
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    const resultElem = document.getElementById('upload-result');
-    if (data.status === 'success') {
-      resultElem.innerHTML = `<p class="text-success">파일 업로드 성공: ${data.file_name}</p>`;
-    } else {
-      resultElem.innerHTML = `<p class="text-danger">파일 업로드 실패: ${data.message}</p>`;
-    }
-  })
-  .catch(error => {
-    console.error('파일 업로드 오류:', error);
-    document.getElementById('upload-result').innerHTML = `<p class="text-danger">파일 업로드 중 오류 발생</p>`;
+  const fileInput = form.querySelector('input[type="file"]');
+  const files = fileInput.files;
+  const resultElem = document.getElementById('upload-result');
+  const progressElem = document.getElementById('upload-progress');
+  const progressBar = progressElem.querySelector('.progress-bar');
+  
+  if (files.length === 0) {
+    resultElem.innerHTML = '<p class="text-warning">파일을 선택해주세요.</p>';
+    return;
+  }
+  
+  progressElem.style.display = 'block';
+  resultElem.innerHTML = '';
+  
+  const uploadPromises = [];
+  let completedUploads = 0;
+  const totalFiles = files.length;
+  
+  for (let i = 0; i < files.length; i++) {
+    const formData = new FormData();
+    formData.append('file', files[i]);
+    formData.append('csrfmiddlewaretoken', csrfToken);
+    
+    const uploadPromise = fetch(form.action, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      completedUploads++;
+      const progress = (completedUploads / totalFiles) * 100;
+      progressBar.style.width = progress + '%';
+      progressBar.textContent = Math.round(progress) + '%';
+      
+      if (data.status === 'success') {
+        resultElem.innerHTML += `<p class="text-success">✓ ${data.file_name} 업로드 성공</p>`;
+      } else {
+        resultElem.innerHTML += `<p class="text-danger">✗ ${files[i].name} 업로드 실패: ${data.message}</p>`;
+      }
+      
+      return data;
+    })
+    .catch(error => {
+      completedUploads++;
+      const progress = (completedUploads / totalFiles) * 100;
+      progressBar.style.width = progress + '%';
+      progressBar.textContent = Math.round(progress) + '%';
+      
+      resultElem.innerHTML += `<p class="text-danger">✗ ${files[i].name} 업로드 중 오류 발생</p>`;
+      console.error('파일 업로드 오류:', error);
+    });
+    
+    uploadPromises.push(uploadPromise);
+  }
+  
+  Promise.all(uploadPromises).then(() => {
+    setTimeout(() => {
+      progressElem.style.display = 'none';
+      progressBar.style.width = '0%';
+      progressBar.textContent = '';
+    }, 2000);
   });
 });
 </script>
